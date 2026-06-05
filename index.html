@@ -2025,66 +2025,101 @@
       <!-- NERAS AI — COMMAND CENTER -->
       <div id="page-neras-ai" class="page">
         <style>
-          /* Command Center styles — scoped */
-          #page-neras-ai { padding:0 !important; height:calc(100vh - 52px); display:none; flex-direction:column; }
+          #page-neras-ai { padding:0!important; height:calc(100vh - 52px); display:none; flex-direction:column; }
           #page-neras-ai.active { display:flex; }
-          .cc-layout { flex:1; display:flex; overflow:hidden; height:100%; }
-          .cc-chat { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-          .cc-messages { flex:1; overflow-y:auto; padding:20px 24px 12px; display:flex; flex-direction:column; gap:14px; scroll-behavior:smooth; }
+          .cc-layout { flex:1; display:flex; overflow:hidden; }
+          .cc-chat   { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+          /* Daily header */
+          .cc-daily { padding:14px 22px 10px; border-bottom:0.5px solid var(--border); background:var(--surface); flex-shrink:0; }
+          .cc-daily-greeting { font-size:16px; font-weight:600; color:var(--text); margin-bottom:8px; }
+          .cc-daily-row { display:flex; gap:8px; flex-wrap:wrap; }
+          .cc-daily-chip { padding:5px 11px; background:var(--surface2); border:0.5px solid var(--border); border-radius:20px; font-size:11.5px; color:var(--text2); display:flex; align-items:center; gap:5px; }
+          .cc-daily-chip span { color:var(--green); font-weight:500; }
+          .cc-daily-sub { font-size:12px; color:var(--text3); margin-top:8px; }
+
+          /* Messages */
+          .cc-messages { flex:1; overflow-y:auto; padding:16px 20px 8px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; }
           .cc-messages::-webkit-scrollbar { width:4px; }
           .cc-messages::-webkit-scrollbar-thumb { background:var(--surface2); border-radius:4px; }
-          .cc-day { text-align:center; font-size:10px; font-family:var(--mono); color:var(--text3); padding:4px 0; letter-spacing:1px; }
+          .cc-day-sep { text-align:center; font-size:10px; font-family:var(--mono); color:var(--text3); padding:4px 0; letter-spacing:1px; }
+
           /* User bubble */
-          .cc-user { display:flex; justify-content:flex-end; gap:8px; align-items:flex-end; animation:fadeIn 0.25s ease; }
-          .cc-user-bubble { max-width:58%; background:rgba(74,222,128,0.1); border:0.5px solid rgba(74,222,128,0.22); border-radius:14px 14px 2px 14px; padding:10px 14px; font-size:13px; color:var(--text); line-height:1.5; }
+          .cc-user { display:flex; justify-content:flex-end; gap:8px; align-items:flex-end; animation:ccFade .25s ease; }
+          .cc-user-bubble { max-width:60%; background:rgba(74,222,128,0.1); border:0.5px solid rgba(74,222,128,0.22); border-radius:14px 14px 2px 14px; padding:9px 13px; font-size:13px; color:var(--text); line-height:1.5; }
           .cc-meta { font-size:10px; color:var(--text3); font-family:var(--mono); flex-shrink:0; text-align:right; }
+
           /* AI bubble */
-          .cc-ai { display:flex; gap:10px; align-items:flex-start; animation:fadeIn 0.3s ease; }
-          .cc-ai-av { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,rgba(74,222,128,0.18),rgba(74,222,128,0.04)); border:0.5px solid rgba(74,222,128,0.28); display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:2px; }
-          .cc-ai-bubble { max-width:70%; background:var(--surface); border:0.5px solid var(--border); border-radius:2px 14px 14px 14px; padding:12px 16px; font-size:13px; color:var(--text2); line-height:1.6; }
+          .cc-ai-msg { display:flex; gap:9px; align-items:flex-start; animation:ccFade .3s ease; }
+          .cc-av { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,rgba(74,222,128,.18),rgba(74,222,128,.04)); border:0.5px solid rgba(74,222,128,.28); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; margin-top:2px; }
+          .cc-ai-bubble { max-width:72%; background:var(--surface); border:0.5px solid var(--border); border-radius:2px 14px 14px 14px; padding:11px 15px; font-size:13px; color:var(--text2); line-height:1.6; }
           .cc-ai-bubble strong { color:var(--text); }
-          .cc-ai-time { font-size:10px; color:var(--text3); font-family:var(--mono); margin-top:6px; text-align:right; }
-          /* Actions */
-          .cc-actions { margin-top:10px; padding-top:10px; border-top:0.5px solid var(--border); }
-          .cc-actions-lbl { font-size:9px; font-family:var(--mono); color:var(--green); letter-spacing:1px; margin-bottom:6px; }
-          .cc-action { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--text2); padding:2px 0; }
-          .cc-action-ok { color:var(--green); flex-shrink:0; }
-          /* Macro & weight cards */
-          .cc-macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
-          .cc-macro-card { background:var(--surface2); border-radius:9px; padding:9px 11px; border:0.5px solid var(--border); text-align:center; }
-          .cc-macro-val  { font-size:17px; font-weight:300; color:var(--text); letter-spacing:-0.5px; }
-          .cc-macro-unit { font-size:9px; color:var(--text3); font-family:var(--mono); margin-bottom:1px; }
-          .cc-macro-name { font-size:10px; color:var(--text3); margin-top:2px; }
-          .cc-weight-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
-          .cc-weight-card { background:var(--surface2); border-radius:9px; padding:9px 11px; border:0.5px solid var(--border); }
-          .cc-weight-lbl { font-size:9px; color:var(--text3); font-family:var(--mono); margin-bottom:3px; }
-          .cc-weight-val { font-size:15px; font-weight:300; color:var(--text); }
+          .cc-ai-time { font-size:10px; color:var(--text3); font-family:var(--mono); margin-top:5px; text-align:right; }
+
+          /* Actions block */
+          .cc-acts { margin-top:9px; padding:9px 12px; background:rgba(74,222,128,0.04); border-radius:9px; border:0.5px solid rgba(74,222,128,0.15); }
+          .cc-acts-lbl { font-size:9px; font-family:var(--mono); color:var(--green); letter-spacing:1px; margin-bottom:6px; }
+          .cc-act-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text2); padding:2px 0; }
+          .cc-act-ok { color:var(--green); flex-shrink:0; font-size:11px; }
+
+          /* Approve/Reject */
+          .cc-approve { display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; }
+          .cc-btn-apply { padding:5px 14px; background:rgba(74,222,128,0.12); border:0.5px solid rgba(74,222,128,0.3); border-radius:7px; font-size:11.5px; color:var(--green); cursor:pointer; font-family:var(--font); transition:all .15s; }
+          .cc-btn-apply:hover { background:rgba(74,222,128,0.2); }
+          .cc-btn-ignore { padding:5px 14px; background:var(--surface2); border:0.5px solid var(--border); border-radius:7px; font-size:11.5px; color:var(--text3); cursor:pointer; font-family:var(--font); transition:all .15s; }
+          .cc-btn-ignore:hover { color:var(--coral); border-color:rgba(251,113,133,.3); }
+          .cc-btn-why { padding:5px 12px; background:none; border:0.5px solid var(--border); border-radius:7px; font-size:11px; color:var(--text3); cursor:pointer; font-family:var(--font); }
+          .cc-btn-why:hover { color:var(--text); border-color:var(--border); }
+
+          /* Why panel */
+          .cc-why { margin-top:8px; padding:10px 13px; background:var(--surface2); border-radius:9px; border:0.5px solid var(--border); display:none; }
+          .cc-why.open { display:block; }
+          .cc-why-lbl { font-size:9px; font-family:var(--mono); color:var(--text3); letter-spacing:1px; margin-bottom:6px; }
+          .cc-why-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text2); padding:2px 0; }
+          .cc-conf { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-family:var(--mono); margin-top:6px; }
+          .cc-conf-high { background:rgba(74,222,128,.1); color:var(--green); }
+          .cc-conf-med  { background:rgba(251,191,36,.1);  color:var(--amber); }
+
+          /* Macro / weight cards */
+          .cc-macro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:9px 0; }
+          .cc-macro-card { background:var(--surface2); border-radius:9px; padding:8px 10px; border:0.5px solid var(--border); text-align:center; }
+          .cc-macro-val  { font-size:16px; font-weight:300; color:var(--text); letter-spacing:-.5px; }
+          .cc-macro-unit { font-size:9px; color:var(--text3); font-family:var(--mono); }
+          .cc-macro-name { font-size:10px; color:var(--text3); margin-top:1px; }
+          .cc-weight-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:9px 0; }
+          .cc-weight-card { background:var(--surface2); border-radius:9px; padding:8px 10px; border:0.5px solid var(--border); }
+          .cc-weight-lbl  { font-size:9px; color:var(--text3); font-family:var(--mono); margin-bottom:3px; }
+          .cc-weight-val  { font-size:14px; font-weight:300; color:var(--text); }
+
           /* Typing */
-          .cc-typing { display:flex; gap:10px; align-items:flex-start; }
-          .cc-typing-dots { display:flex; gap:4px; align-items:center; padding:11px 14px; background:var(--surface); border:0.5px solid var(--border); border-radius:2px 14px 14px 14px; }
-          .cc-typing-dots span { width:5px; height:5px; border-radius:50%; background:var(--text3); animation:cc-bounce 1.2s ease-in-out infinite; }
-          .cc-typing-dots span:nth-child(2){animation-delay:.2s}.cc-typing-dots span:nth-child(3){animation-delay:.4s}
-          @keyframes cc-bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-          @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-          /* Suggestions */
-          .cc-sug-row { padding:8px 24px; display:flex; gap:6px; overflow-x:auto; flex-shrink:0; }
-          .cc-sug-row::-webkit-scrollbar{display:none}
-          .cc-sug { padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer; background:var(--surface2); border:0.5px solid var(--border); font-size:11.5px; color:var(--text2); font-family:var(--font); transition:all 0.15s; flex-shrink:0; }
-          .cc-sug:hover { background:var(--surface3); color:var(--text); border-color:rgba(74,222,128,0.25); }
+          .cc-typing { display:flex; gap:9px; align-items:flex-start; }
+          .cc-dots { display:flex; gap:4px; align-items:center; padding:10px 13px; background:var(--surface); border:0.5px solid var(--border); border-radius:2px 14px 14px 14px; }
+          .cc-dots span { width:5px; height:5px; border-radius:50%; background:var(--text3); animation:ccBounce 1.2s ease-in-out infinite; }
+          .cc-dots span:nth-child(2){animation-delay:.2s}.cc-dots span:nth-child(3){animation-delay:.4s}
+          @keyframes ccBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+          @keyframes ccFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+          /* Quick chips */
+          .cc-chips { padding:8px 20px 6px; display:flex; gap:6px; overflow-x:auto; flex-shrink:0; }
+          .cc-chips::-webkit-scrollbar{display:none}
+          .cc-chip { padding:6px 12px; border-radius:20px; white-space:nowrap; cursor:pointer; background:var(--surface2); border:0.5px solid var(--border); font-size:11.5px; color:var(--text2); font-family:var(--font); transition:all .15s; flex-shrink:0; display:flex; align-items:center; gap:4px; }
+          .cc-chip:hover { background:var(--surface3); color:var(--text); border-color:rgba(74,222,128,.2); }
+
           /* Input */
-          .cc-input-wrap { padding:10px 16px 14px; border-top:0.5px solid var(--border); background:var(--surface); flex-shrink:0; }
-          .cc-input-row { display:flex; align-items:flex-end; gap:8px; background:var(--surface2); border-radius:14px; border:0.5px solid var(--border); padding:9px 12px; transition:border-color 0.2s; }
-          .cc-input-row:focus-within { border-color:rgba(74,222,128,0.35); }
-          .cc-field { flex:1; background:none; border:none; outline:none; font-family:var(--font); font-size:13px; color:var(--text); resize:none; min-height:22px; max-height:100px; line-height:1.5; }
+          .cc-input-wrap { padding:8px 14px 12px; border-top:0.5px solid var(--border); background:var(--surface); flex-shrink:0; }
+          .cc-input-row { display:flex; align-items:flex-end; gap:8px; background:var(--surface2); border-radius:14px; border:0.5px solid var(--border); padding:8px 11px; transition:border-color .2s; }
+          .cc-input-row:focus-within { border-color:rgba(74,222,128,.35); }
+          .cc-field { flex:1; background:none; border:none; outline:none; font-family:var(--font); font-size:13px; color:var(--text); resize:none; min-height:22px; max-height:90px; line-height:1.5; }
           .cc-field::placeholder { color:var(--text3); }
-          .cc-send { width:30px; height:30px; border-radius:50%; border:none; background:var(--green); color:#0a0f0d; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.2s; }
+          .cc-send { width:30px; height:30px; border-radius:50%; border:none; background:var(--green); color:#0a0f0d; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all .2s; }
           .cc-send:hover { background:var(--green2); transform:scale(1.06); }
-          .cc-hint { font-size:10px; color:var(--text3); text-align:center; margin-top:7px; font-family:var(--mono); }
+          .cc-hint { font-size:10px; color:var(--text3); text-align:center; margin-top:6px; font-family:var(--mono); }
+
           /* Context panel */
-          .cc-ctx { width:256px; flex-shrink:0; background:var(--surface); border-left:0.5px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-          .cc-ctx-head { padding:13px 14px; border-bottom:0.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+          .cc-ctx { width:252px; flex-shrink:0; background:var(--surface); border-left:0.5px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+          .cc-ctx-head { padding:12px 13px; border-bottom:0.5px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
           .cc-ctx-title { font-size:12px; font-weight:600; color:var(--text); }
-          .cc-ctx-body { flex:1; overflow-y:auto; padding:8px 10px; }
+          .cc-ctx-body  { flex:1; overflow-y:auto; padding:8px 10px; }
           .cc-ctx-body::-webkit-scrollbar{width:3px}
           .cc-ctx-body::-webkit-scrollbar-thumb{background:var(--surface3)}
           .cc-ctx-card { display:flex; align-items:center; justify-content:space-between; padding:9px 11px; border-radius:10px; background:var(--surface2); border:0.5px solid var(--border); margin-bottom:5px; }
@@ -2092,36 +2127,60 @@
           .cc-ctx-icon { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
           .cc-ctx-name { font-size:11px; color:var(--text3); }
           .cc-ctx-val  { font-size:13px; font-weight:500; color:var(--text); }
-          .cc-ctx-sub  { font-size:10px; color:var(--text3); margin-top:0px; }
+          .cc-ctx-sub  { font-size:10px; color:var(--text3); }
           .cc-badge { font-size:9px; padding:2px 6px; border-radius:4px; font-family:var(--mono); }
-          .cc-badge-ok   { background:rgba(74,222,128,0.1);  color:var(--green); }
-          .cc-badge-warn { background:rgba(251,191,36,0.1);  color:var(--amber); }
-          .cc-badge-risk { background:rgba(251,113,133,0.1); color:var(--coral); }
+          .cc-badge-ok   { background:rgba(74,222,128,.1);  color:var(--green); }
+          .cc-badge-warn { background:rgba(251,191,36,.1);  color:var(--amber); }
+          .cc-badge-risk { background:rgba(251,113,133,.1); color:var(--coral); }
           .cc-ring { position:relative; width:30px; height:30px; }
           .cc-ring svg { transform:rotate(-90deg); }
           .cc-ring-pct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:8px; font-family:var(--mono); color:var(--text2); }
-          .cc-insight { background:var(--surface2); border-radius:10px; border:0.5px solid var(--border); padding:10px 11px; margin-bottom:5px; }
-          .cc-insight-icon { font-size:13px; margin-bottom:4px; }
-          .cc-insight-txt  { font-size:11.5px; color:var(--text2); line-height:1.5; }
-          .cc-insight-link { font-size:11px; color:var(--green); margin-top:5px; cursor:pointer; }
-          .cc-next { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:0.5px solid var(--border); font-size:11.5px; color:var(--text2); }
-          .cc-next:last-child{border-bottom:none}
-          .cc-next-dot { width:7px; height:7px; border-radius:50%; border:1.5px solid var(--text3); flex-shrink:0; }
-          .cc-next-time { font-size:10px; color:var(--text3); font-family:var(--mono); margin-left:auto; }
+
+          /* Priority strip */
+          .cc-prio { margin-bottom:5px; padding:8px 11px; border-radius:10px; background:var(--surface2); border:0.5px solid var(--border); display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--text2); }
+
+          /* Daily summary */
+          .cc-summary { background:var(--surface2); border-radius:10px; border:0.5px solid var(--border); padding:10px 12px; margin-bottom:6px; }
+          .cc-summary-title { font-size:9px; font-family:var(--mono); color:var(--text3); letter-spacing:1px; margin-bottom:8px; }
+          .cc-summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+          .cc-summary-item { font-size:11px; color:var(--text2); }
+          .cc-summary-val  { font-weight:500; color:var(--text); }
+          .cc-score { font-size:18px; font-weight:300; color:var(--green); text-align:center; margin-top:6px; }
+          .cc-score-lbl { font-size:10px; color:var(--text3); text-align:center; }
+
+          /* Memory panel */
+          .cc-mem-item { display:flex; align-items:center; gap:7px; padding:6px 0; border-bottom:0.5px solid var(--border); font-size:11.5px; color:var(--text2); }
+          .cc-mem-item:last-child { border-bottom:none; }
+          .cc-mem-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
           @media(max-width:900px){.cc-ctx{display:none}.cc-macro-grid{grid-template-columns:repeat(2,1fr)}.cc-weight-grid{grid-template-columns:repeat(2,1fr)}}
         </style>
 
         <div class="cc-layout">
-          <!-- Messages -->
+          <!-- CHAT MAIN -->
           <div class="cc-chat">
+
+            <!-- DAILY HEADER -->
+            <div class="cc-daily" id="cc-daily">
+              <div class="cc-daily-greeting" id="cc-greeting">Bom dia! 👋</div>
+              <div class="cc-daily-row">
+                <div class="cc-daily-chip">⚖ Peso: <span id="cc-h-peso">—</span></div>
+                <div class="cc-daily-chip">🌙 Sono: <span id="cc-h-sono">—</span></div>
+                <div class="cc-daily-chip">🏋 Treino: <span id="cc-h-treino">Hoje</span></div>
+                <div class="cc-daily-chip">🎯 Meta: <span id="cc-h-meta">—</span></div>
+              </div>
+              <div class="cc-daily-sub" id="cc-daily-sub">O que aconteceu hoje?</div>
+            </div>
+
+            <!-- MESSAGES -->
             <div class="cc-messages" id="cc-messages">
-              <div class="cc-day">— Hoje —</div>
-              <div class="cc-ai">
-                <div class="cc-ai-av">🧠</div>
+              <div class="cc-day-sep">— Hoje —</div>
+              <div class="cc-ai-msg">
+                <div class="cc-av">🧠</div>
                 <div>
                   <div class="cc-ai-bubble">
-                    <strong>Olá! Sou o NERAS AI, seu assistente inteligente de saúde.</strong><br><br>
-                    Me conta como foi seu dia — quanto dormiu, o que comeu, como foi o treino, se está sentindo alguma dor — e eu atualizo toda a plataforma automaticamente.<br><br>
+                    <strong>Olá! Sou o NERAS AI.</strong><br><br>
+                    Me conta como foi seu dia — quanto dormiu, o que comeu, como foi o treino, se sentiu alguma dor. Eu atualizo toda a plataforma automaticamente.<br><br>
                     <span style="color:var(--green)">✦</span> Sem formulários. Só uma conversa.
                   </div>
                   <div class="cc-ai-time" id="cc-welcome-time"></div>
@@ -2129,16 +2188,19 @@
               </div>
             </div>
 
-            <!-- Suggestions -->
-            <div class="cc-sug-row">
-              <div class="cc-sug" onclick="ccSend('Como foi meu dia?')">📋 Como foi meu dia?</div>
-              <div class="cc-sug" onclick="ccSend('Resumo da semana')">📊 Resumo da semana</div>
-              <div class="cc-sug" onclick="ccSend('Ajustar meu treino')">💪 Ajustar treino</div>
-              <div class="cc-sug" onclick="ccSend('Sugestão de refeição')">🥗 Sugestão de refeição</div>
-              <div class="cc-sug" onclick="ccSend('Insights do NERAS')">🔍 Insights</div>
+            <!-- QUICK CHIPS -->
+            <div class="cc-chips">
+              <div class="cc-chip" onclick="ccChip('Dormi mal hoje')">💤 Dormi mal</div>
+              <div class="cc-chip" onclick="ccChip('Completei o treino de hoje')">🏋️ Completei treino</div>
+              <div class="cc-chip" onclick="ccChip('Quero atualizar meu peso')">⚖️ Atualizar peso</div>
+              <div class="cc-chip" onclick="ccChip('Quero registrar uma refeição')">🍚 Registrar refeição</div>
+              <div class="cc-chip" onclick="ccChip('Bebi água hoje')">💧 Registrar água</div>
+              <div class="cc-chip" onclick="ccChip('Estou sentindo dor')">🤕 Relatar dor</div>
+              <div class="cc-chip" onclick="ccChip('Quero atualizar meu sono')">😴 Atualizar sono</div>
+              <div class="cc-chip" onclick="ccChip('Como estou hoje?')">📊 Resumo do dia</div>
             </div>
 
-            <!-- Input -->
+            <!-- INPUT -->
             <div class="cc-input-wrap">
               <div class="cc-input-row">
                 <textarea class="cc-field" id="cc-input" placeholder="Pergunte qualquer coisa..." rows="1"
@@ -2151,7 +2213,7 @@
             </div>
           </div>
 
-          <!-- Context Panel -->
+          <!-- CONTEXT PANEL -->
           <aside class="cc-ctx">
             <div class="cc-ctx-head">
               <div class="cc-ctx-title">Contexto Atual</div>
@@ -2159,17 +2221,39 @@
             </div>
             <div class="cc-ctx-body">
 
+              <!-- PRIORITY STRIP -->
+              <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;padding:4px 2px 6px">PRIORIDADES DE HOJE</div>
+              <div id="cc-priorities">
+                <div class="cc-prio" style="opacity:.5;font-style:italic;font-size:11px">Registre dados para ver prioridades</div>
+              </div>
+
+              <!-- DAILY SUMMARY -->
+              <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;padding:8px 2px 5px">RESUMO DIÁRIO</div>
+              <div class="cc-summary">
+                <div class="cc-summary-grid">
+                  <div class="cc-summary-item">💧 Água<br><span class="cc-summary-val" id="cc-s-agua">0L</span></div>
+                  <div class="cc-summary-item">🔥 Calorias<br><span class="cc-summary-val" id="cc-s-cal">0</span></div>
+                  <div class="cc-summary-item">🏋 Treino<br><span class="cc-summary-val" id="cc-s-treino">—</span></div>
+                  <div class="cc-summary-item">🌙 Sono<br><span class="cc-summary-val" id="cc-s-sono">—</span></div>
+                  <div class="cc-summary-item">😊 Humor<br><span class="cc-summary-val" id="cc-s-humor">—</span></div>
+                  <div class="cc-summary-item">🎯 Score<br><span class="cc-summary-val" id="cc-s-score" style="color:var(--green)">—</span></div>
+                </div>
+              </div>
+
+              <!-- METRICS -->
+              <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;padding:6px 2px 5px">MÉTRICAS</div>
+
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(96,165,250,0.1)">⚖</div>
+                  <div class="cc-ctx-icon" style="background:rgba(96,165,250,.1)">⚖</div>
                   <div><div class="cc-ctx-name">Peso</div><div class="cc-ctx-val" id="cc-ctx-peso">—</div><div class="cc-ctx-sub" id="cc-ctx-peso-sub">—</div></div>
                 </div>
-                <div style="font-size:16px;color:var(--text3)" id="cc-ctx-peso-trend">—</div>
+                <div style="font-size:15px;color:var(--text3)" id="cc-ctx-peso-trend">—</div>
               </div>
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(167,139,250,0.1)">🌙</div>
+                  <div class="cc-ctx-icon" style="background:rgba(167,139,250,.1)">🌙</div>
                   <div><div class="cc-ctx-name">Sono</div><div class="cc-ctx-val" id="cc-ctx-sono">—</div><div class="cc-ctx-sub" id="cc-ctx-sono-sub">Não registrado</div></div>
                 </div>
                 <div class="cc-badge cc-badge-warn" id="cc-ctx-sono-badge">—</div>
@@ -2177,15 +2261,15 @@
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(251,191,36,0.1)">⚡</div>
+                  <div class="cc-ctx-icon" style="background:rgba(251,191,36,.1)">⚡</div>
                   <div><div class="cc-ctx-name">Energia</div><div class="cc-ctx-val" id="cc-ctx-energia">—</div><div class="cc-ctx-sub" id="cc-ctx-energia-sub">—</div></div>
                 </div>
-                <div style="font-size:15px" id="cc-ctx-energia-trend">—</div>
+                <div style="font-size:14px" id="cc-ctx-energia-trend">—</div>
               </div>
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(251,113,133,0.1)">❤</div>
+                  <div class="cc-ctx-icon" style="background:rgba(251,113,133,.1)">❤</div>
                   <div><div class="cc-ctx-name">Recuperação</div><div class="cc-ctx-val" id="cc-ctx-recup">—</div><div class="cc-ctx-sub" id="cc-ctx-recup-sub">—</div></div>
                 </div>
                 <div class="cc-badge cc-badge-ok" id="cc-ctx-recup-badge">—</div>
@@ -2193,7 +2277,7 @@
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(251,191,36,0.1)">🍽</div>
+                  <div class="cc-ctx-icon" style="background:rgba(251,191,36,.1)">🍽</div>
                   <div><div class="cc-ctx-name">Nutrição</div><div class="cc-ctx-val" id="cc-ctx-cal">0 kcal</div><div class="cc-ctx-sub" id="cc-ctx-cal-meta">de 2.400 kcal</div></div>
                 </div>
                 <div class="cc-ring">
@@ -2204,7 +2288,7 @@
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(74,222,128,0.1)">🏋</div>
+                  <div class="cc-ctx-icon" style="background:rgba(74,222,128,.1)">🏋</div>
                   <div><div class="cc-ctx-name">Treino</div><div class="cc-ctx-val" id="cc-ctx-treino">Normal</div><div class="cc-ctx-sub">Hoje</div></div>
                 </div>
                 <div style="width:8px;height:8px;border-radius:50%;background:var(--green)" id="cc-treino-dot"></div>
@@ -2212,7 +2296,7 @@
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(74,222,128,0.1)">🛡</div>
+                  <div class="cc-ctx-icon" style="background:rgba(74,222,128,.1)">🛡</div>
                   <div><div class="cc-ctx-name">Risco de Lesão</div><div class="cc-ctx-val" id="cc-ctx-risco">Baixo</div><div class="cc-ctx-sub" id="cc-ctx-risco-sub">Seguro</div></div>
                 </div>
                 <div style="width:8px;height:8px;border-radius:50%;background:var(--green)" id="cc-risco-dot"></div>
@@ -2220,7 +2304,7 @@
 
               <div class="cc-ctx-card">
                 <div class="cc-ctx-left">
-                  <div class="cc-ctx-icon" style="background:rgba(96,165,250,0.1)">💧</div>
+                  <div class="cc-ctx-icon" style="background:rgba(96,165,250,.1)">💧</div>
                   <div><div class="cc-ctx-name">Hidratação</div><div class="cc-ctx-val" id="cc-ctx-agua">0 L</div><div class="cc-ctx-sub" id="cc-ctx-agua-meta">de 3,0 L</div></div>
                 </div>
                 <div class="cc-ring">
@@ -2229,25 +2313,10 @@
                 </div>
               </div>
 
-              <!-- Insights -->
-              <div style="padding:10px 2px 5px;display:flex;align-items:center;justify-content:space-between">
-                <div style="font-size:12px;font-weight:600;color:var(--text)">Insights NERAS</div>
-                <span style="font-size:11px;color:var(--green);cursor:pointer">Ver todos</span>
-              </div>
-              <div id="cc-insights">
-                <div class="cc-insight">
-                  <div class="cc-insight-icon">✦</div>
-                  <div class="cc-insight-txt">Registre seus dados para que a IA gere insights personalizados.</div>
-                  <div class="cc-insight-link">Ver recomendações →</div>
-                </div>
-              </div>
-
-              <!-- Next steps -->
-              <div style="padding:10px 2px 5px"><div style="font-size:12px;font-weight:600;color:var(--text)">Próximos Passos</div></div>
-              <div id="cc-nextsteps">
-                <div class="cc-next"><div class="cc-next-dot"></div>Registre seu sono de hoje<div class="cc-next-time">Agora</div></div>
-                <div class="cc-next"><div class="cc-next-dot"></div>Adicione seu peso<div class="cc-next-time">Hoje</div></div>
-                <div class="cc-next"><div class="cc-next-dot"></div>Registre uma refeição<div class="cc-next-time">Hoje</div></div>
+              <!-- MEMORY -->
+              <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;padding:8px 2px 5px">MEMÓRIA NERAS</div>
+              <div id="cc-memory">
+                <div class="cc-mem-item" style="opacity:.5;font-style:italic;font-size:11px">Nenhum evento ainda</div>
               </div>
 
             </div>
@@ -4502,395 +4571,918 @@ function aplicarPlano() {
   setTimeout(() => showPage('treino', document.querySelector('[onclick*=treino]')), 1200);
 }
 // ═══════════════════════════════════════════
-// NERAS AI — COMMAND CENTER ENGINE
+// NERAS AI — COMMAND CENTER ENGINE v3
 // ═══════════════════════════════════════════
+
+// ── ESTADO ISOLADO DO CC ────────────────────
 const CC = {
   habitos:   { sono:null, agua:0, energia:null, humor:null },
   nutricao:  { cal:0, prot:0, carb:0, gord:0 },
-  treino:    { status:'Normal', ajustado:false },
+  treino:    { status:'Normal', ajustado:false, concluido:false },
   seguranca: { risco:'Baixo', score:92, lesoes:[] },
+  memoria:   [],
   historico: [],
 
   save() {
     try {
-      localStorage.setItem('cc_state', JSON.stringify({
+      localStorage.setItem('cc_v3', JSON.stringify({
         habitos:this.habitos, nutricao:this.nutricao,
-        treino:this.treino, seguranca:this.seguranca
+        treino:this.treino, seguranca:this.seguranca, memoria:this.memoria
       }));
-      localStorage.setItem('cc_hist', JSON.stringify(this.historico.slice(-40)));
+      localStorage.setItem('cc_hist3', JSON.stringify(this.historico.slice(-40)));
     } catch(_) {}
   },
+
   load() {
     try {
-      const s = JSON.parse(localStorage.getItem('cc_state')||'null');
-      if(s) { Object.assign(this.habitos,s.habitos||{}); Object.assign(this.nutricao,s.nutricao||{}); Object.assign(this.treino,s.treino||{}); Object.assign(this.seguranca,s.seguranca||{}); }
-      const h = JSON.parse(localStorage.getItem('cc_hist')||'null');
-      if(h) this.historico = h;
+      const s = JSON.parse(localStorage.getItem('cc_v3') || 'null');
+      if(s) {
+        if(s.habitos)   Object.assign(this.habitos,   s.habitos);
+        if(s.nutricao)  Object.assign(this.nutricao,  s.nutricao);
+        if(s.treino)    Object.assign(this.treino,    s.treino);
+        if(s.seguranca) Object.assign(this.seguranca, s.seguranca);
+        if(Array.isArray(s.memoria)) this.memoria = s.memoria;
+      }
+      const h = JSON.parse(localStorage.getItem('cc_hist3') || 'null');
+      if(Array.isArray(h)) this.historico = h;
     } catch(_) {}
+  },
+
+  addMem(tipo, desc, cor) {
+    this.memoria.unshift({ tipo, desc, cor: cor||'var(--green)', ts: ccNow() });
+    this.memoria = this.memoria.slice(0, 20);
+    // Sincronizar com timeline global
+    if(typeof timelineAutoEvento === 'function') {
+      const icons = { Sono:'🌙', Peso:'⚖', Treino:'💪', Dor:'⚠', Refeição:'🍽', Água:'💧', Humor:'😊' };
+      timelineAutoEvento(
+        'cc_'+tipo+'_'+Date.now(),
+        tipo + ' via NERAS AI',
+        desc + ' — registrado pelo assistente.',
+        cor||'var(--green)',
+        icons[tipo]||'●'
+      );
+    }
   }
 };
 
-// Alimentos DB para estimativa nutricional
+// ── BASE DE ALIMENTOS ────────────────────────
 const CC_FOODS = {
-  arroz:   {kcal:130,prot:2.7,carb:28,gord:0.3}, frango: {kcal:165,prot:31,carb:0,gord:3.6},
-  feijão:  {kcal:77, prot:5.2,carb:14,gord:0.5}, ovo:    {kcal:70, prot:6,  carb:0.6,gord:5},
-  banana:  {kcal:89, prot:1.1,carb:23,gord:0.3}, whey:   {kcal:120,prot:25, carb:3,  gord:2},
-  batata:  {kcal:86, prot:2,  carb:20,gord:0.1}, aveia:  {kcal:389,prot:17, carb:66, gord:7},
-  pão:     {kcal:270,prot:9,  carb:49,gord:3.5}, leite:  {kcal:61, prot:3.2,carb:4.8,gord:3.3},
-  maçã:    {kcal:52, prot:0.3,carb:14,gord:0.2}, iogurte:{kcal:59, prot:3.5,carb:5,  gord:3},
+  arroz:   {k:130,p:2.7,c:28, g:0.3}, frango:  {k:165,p:31, c:0,  g:3.6},
+  feijão:  {k:77, p:5.2,c:14, g:0.5}, ovo:     {k:70, p:6,  c:0.6,g:5  },
+  banana:  {k:89, p:1.1,c:23, g:0.3}, whey:    {k:120,p:25, c:3,  g:2  },
+  batata:  {k:86, p:2,  c:20, g:0.1}, aveia:   {k:389,p:17, c:66, g:7  },
+  pão:     {k:270,p:9,  c:49, g:3.5}, leite:   {k:61, p:3.2,c:4.8,g:3.3},
+  maçã:    {k:52, p:0.3,c:14, g:0.2}, iogurte: {k:59, p:3.5,c:5,  g:3  },
+  salmão:  {k:208,p:20, c:0,  g:13 }, atum:    {k:116,p:26, c:0,  g:1  },
+  arroz_integral:{k:112,p:2.1,c:24,g:0.4}, peito_frango:{k:165,p:31,c:0,g:3.6},
+  batata_doce:{k:86,p:1.6,c:20,g:0.1}, brocolis:{k:34,p:2.8,c:7,g:0.4},
 };
 
-function ccNow() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
-function ccEsc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ccNow() {
+  return new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+function ccDate() {
+  return new Date().toLocaleDateString('pt-BR');
+}
+function ccEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-// ── INTERPRETAR ──────────────────────────────
+// ── MOTOR DE INTERPRETAÇÃO ──────────────────
 function ccInterpretar(texto) {
   const t = texto.toLowerCase().trim();
 
-  // SONO
-  const sonoNum = t.match(/dormi\s+(?:só\s+)?(\d+(?:[.,]\d+)?)\s*h/)||t.match(/(\d+(?:[.,]\d+)?)\s*h(?:oras?)?\s+de\s+sono/)||t.match(/sono[:\s]+(\d+(?:[.,]\d+)?)/);
-  if(sonoNum||/dormi\s+(mal|pouco|bem|muito\s*bem|horrível)/i.test(t)||/não\s+dormi|quase\s+não\s+dormi/i.test(t)) {
-    let h = sonoNum ? parseFloat(sonoNum[1].replace(',','.')) : /muito\s*bem/i.test(t)?8.5:/dormi\s+bem/i.test(t)?7.5:/dormi\s+mal|pouco/i.test(t)||/quase\s+não/i.test(t)?4.5:3;
-    return ccRespostaSono(h);
+  // ═══ SONO ═══
+  const sonoHoras = t.match(/(?:dormi|sono\s+de)\s+(?:só\s+|apenas\s+)?(\d+(?:[.,]\d+)?)\s*h/) ||
+                    t.match(/(\d+(?:[.,]\d+)?)\s*h(?:oras?)?\s+de\s+sono/) ||
+                    t.match(/sono[:\s]+(\d+(?:[.,]\d+)?)/);
+  if(sonoHoras) return ccR_Sono(parseFloat(sonoHoras[1].replace(',','.')));
+  if(/dormi\s+muito\s+bem|8\s*h|nove\s*h/i.test(t) && /dormi/i.test(t)) return ccR_Sono(8.5);
+  if(/dormi\s+bem/i.test(t)) return ccR_Sono(7.5);
+  if(/dormi\s+(?:mal|pouco|horrível|péssimo)|quase\s+não\s+dormi/i.test(t)) return ccR_Sono(4.5);
+  if(/não\s+dormi/i.test(t)) return ccR_Sono(3);
+  if(/dormi\s+mal/i.test(t)) return ccR_Sono(4.5);
+
+  // ═══ PESO — detectar número puro (ex: "87kg", "87", "87,5") ═══
+  const pesoVal = t.match(/(?:estou\s+com|hoje\s+(?:estou\s+com|pesei)|pesei|peso\s+(?:atual)?|tô\s+com)\s*:?\s*(\d+(?:[.,]\d+)?)\s*kg/) ||
+                  t.match(/(\d+(?:[.,]\d+)?)\s*kg\s*(?:hoje|agora|atual|aqui)?/) ||
+                  t.match(/meu\s+peso\s+(?:é|foi|está|tá)\s*:?\s*(\d+(?:[.,]\d+)?)/) ||
+                  t.match(/^(\d+(?:[.,]\d+)?)\s*kg?$/);  // número puro: "87kg" ou "87"
+  if(pesoVal) {
+    const kg = parseFloat(pesoVal[1].replace(',','.'));
+    if(kg >= 30 && kg <= 300) return ccR_Peso(kg);
+  }
+  // número puro no contexto de peso (ex: resposta para "qual seu peso?")
+  const numPuro = t.match(/^(\d+(?:[.,]\d+)?)$/);
+  if(numPuro) {
+    const n = parseFloat(numPuro[1].replace(',','.'));
+    if(n >= 30 && n <= 300 && CC._aguardando === 'peso') return ccR_Peso(n);
+    if(n >= 1  && n <= 24  && CC._aguardando === 'sono') return ccR_Sono(n);
+    if(n >= 1  && n <= 10  && CC._aguardando === 'energia') { CC.habitos.energia=n; ccSyncGlobal(); return { texto:`Energia ${n}/10 registrada!`, acoes:['Energia atualizada'], extra:null, pendente:null }; }
   }
 
-  // PESO
-  const pesoNum = t.match(/(?:estou\s+com|pesei|hoje\s+pesei|peso\s+atual[:\s]*)\s*(\d+(?:[.,]\d+)?)\s*kg/)||t.match(/(\d+(?:[.,]\d+)?)\s*kg\s*(?:hoje|agora)/);
-  if(pesoNum) return ccRespostaPeso(parseFloat(pesoNum[1].replace(',','.')));
+  // ═══ TREINO CONCLUÍDO ═══
+  if(/(?:fiz|completei|terminei|finalizei)\s+(?:o\s+)?treino|treinei\s+(?:hoje|bem|bastante)|treino\s+(?:feito|ok|concluído|done)/i.test(t))
+    return ccR_TreinoOk(t);
+  if(/^sim$|^feito$|^ok$|^pronto$|^concluí$/i.test(t) && CC._aguardando === 'treino')
+    return ccR_TreinoOk(t);
 
-  // ALIMENTO
-  if(/comi\s+|almocei|jantei|café\s+da\s+manhã|tomei\s+(?:whey|proteína|café)/i.test(t)||t.match(/\d+g\s+de\s+\w+/)) return ccRespostaAlimento(t);
+  // ═══ TREINO FRACO / FALHEI ═══
+  if(/falhei\s+(?:no\s+)?supino|não\s+(?:consegui|fiz|treinei)|pulei\s+o\s+treino|falhei\s+no\s+treino/i.test(t))
+    return ccR_TreinoFalha(t);
+  if(/treino\s+(?:muito\s+)?(?:pesado|difícil|puxado)|cansado\s+demais\s+(?:para|pra)\s+treinar/i.test(t))
+    return ccR_TreinoFalha(t);
 
-  // DOR
-  const dorLocal = t.match(/(?:meu\s+|minha\s+)?(\w+(?:\s+\w+)?)\s+(?:está\s+)?doendo/)||t.match(/dor\s+(?:no|na|em|nos)\s+(\w+(?:\s+\w+)?)/)||t.match(/sinto\s+dor\s+(?:no|na)?\s*(\w+)/);
-  if(dorLocal||/torci|machuquei|lesionei/i.test(t)) return ccRespostaDor(dorLocal?dorLocal[1]:t);
+  // ═══ DOR / LESÃO ═══
+  const dorParte = t.match(/(?:meu|minha)\s+(\w+(?:\s+\w+)?)\s+(?:está|tá)\s+(?:doendo|com\s+dor)/) ||
+                   t.match(/dor\s+(?:no|na|em|nos|nas)\s+(\w+(?:\s+\w+)?)/) ||
+                   t.match(/sinto\s+dor\s+(?:no|na|em)?\s+(\w+)/) ||
+                   t.match(/(\w+)\s+(?:está\s+)?doendo/) ||
+                   t.match(/(?:joelho|lombar|ombro|costas|tornozelo|quadril|pescoço|cotovelo)\s+(?:doendo|com\s+dor|inflamado)/);
+  if(dorParte || /torci|machuquei|lesionei|inflamado|contusão/i.test(t))
+    return ccR_Dor(dorParte ? dorParte[1] : t.match(/(joelho|lombar|ombro|costas|tornozelo|quadril|pescoço|cotovelo)/)?.[1] || 'região afetada');
 
-  // TREINO
-  if(/fiz\s+(?:o\s+)?treino|treinei|completei|treino\s+(?:feito|ok|concluído)/i.test(t)) return ccRespostaTreinoOk();
-  if(/não\s+(?:consegui|fiz|treinei)|falhei|foi\s+(?:pesado|difícil)|cansado/i.test(t)) return ccRespostaTreinoFraco();
+  // ═══ ALIMENTO ═══
+  const temAlimento = /comi|almocei|jantei|café\s+da\s+manhã|lancei|tomei\s+(?:whey|proteína|shake|suplemento)/i.test(t) ||
+                      /\d+\s*g\s+de\s+\w+/i.test(t) ||
+                      /registrar\s+refeição|quero\s+registrar\s+o\s+que\s+comi/i.test(t) ||
+                      /(arroz|frango|feijão|batata|banana|aveia|ovo|pão|leite|salmão|atum|iogurte|whey)\b/i.test(t);
+  if(temAlimento) return ccR_Alimento(t);
 
-  // ÁGUA
-  const aguaNum = t.match(/bebi\s+(\d+(?:[.,]\d+)?)\s*(?:l|litros?|ml)/)||t.match(/(\d+(?:[.,]\d+)?)\s*(?:l|litros?)\s+de\s+água/);
-  if(aguaNum||/bebi\s+(?:água|bastante)/i.test(t)) {
-    let L = aguaNum ? parseFloat(aguaNum[1].replace(',','.')) : 0.5;
-    if(L > 10) L = L/1000;
-    return ccRespostaAgua(L);
+  // ═══ ÁGUA ═══
+  const aguaVal = t.match(/bebi\s+(\d+(?:[.,]\d+)?)\s*(?:l|litros?|litro)/) ||
+                  t.match(/bebi\s+(\d+)\s*ml/) ||
+                  t.match(/(\d+(?:[.,]\d+)?)\s*(?:l|litros?)\s+de\s+água/) ||
+                  t.match(/(\d+)\s*copos?\s+de\s+água/);
+  if(aguaVal || /bebi\s+(?:água|muita\s+água|bastante)|tomei\s+água/i.test(t)) {
+    let L = aguaVal ? parseFloat(aguaVal[1].replace(',','.')) : 0.5;
+    if(aguaVal && aguaVal[0].includes('ml')) L = L / 1000;
+    if(aguaVal && aguaVal[0].includes('cop')) L = L * 0.25; // 1 copo ≈ 250ml
+    return ccR_Agua(L);
   }
 
-  // ENERGIA / HUMOR
-  if(/energia\s+(?:baixa|ruim|ótima|alta|boa)|me\s+sinto\s+(?:bem|mal|cansado|disposto|animado)/i.test(t)) return ccRespostaHumor(t);
+  // ═══ HUMOR / ENERGIA ═══
+  if(/me\s+sinto\s+(?:bem|ótimo|disposto|energético|animado|incrível)/i.test(t)) return ccR_Humor(true, t);
+  if(/me\s+sinto\s+(?:mal|cansado|exausto|sem\s+energia|desmotivado|péssimo)/i.test(t)) return ccR_Humor(false, t);
+  if(/energia\s+(?:alta|boa|ótima|ótimo)/i.test(t)) return ccR_Humor(true, t);
+  if(/energia\s+(?:baixa|ruim|péssima|fraca)/i.test(t)) return ccR_Humor(false, t);
+  if(/^cansado$|^exausto$|^animado$|^disposto$/i.test(t)) return ccR_Humor(/animado|disposto/i.test(t), t);
 
-  // RESUMOS
-  if(/como\s+(?:foi\s+)?meu\s+dia|resumo\s+(?:do\s+)?dia/i.test(t)) return ccResumoDia();
-  if(/resumo\s+(?:da\s+)?semana/i.test(t)) return ccResumoSemana();
-  if(/ajust\w+\s+(?:meu\s+)?treino/i.test(t)) return ccAjusteTreino();
-  if(/sugest\w+\s+de\s+(?:refeição|comida|comer)/i.test(t)) return ccSugestaoRefeicao();
-  if(/insight|analise|como\s+estou|o\s+que\s+detectou/i.test(t)) return ccInsights();
+  // ═══ SONO — frases extras ═══
+  if(/acordei\s+(?:muito\s+)?cedo|noite\s+(?:ruim|péssima|difícil)|insônia/i.test(t)) return ccR_Sono(4.5);
+  if(/dormi\s+(?:super\s+)?bem|noite\s+(?:boa|ótima)|descansado/i.test(t)) return ccR_Sono(8);
 
-  return ccFallback(texto);
+  // ═══ RESUMOS ═══
+  if(/como\s+(?:foi\s+)?meu\s+dia|resumo\s+(?:do\s+)?dia|como\s+estou\s+(?:hoje)?/i.test(t)) return ccR_ResumoDia();
+  if(/resumo\s+(?:da\s+)?semana|semana\s+até\s+agora/i.test(t)) return ccR_ResumoSemana();
+  if(/ajust\w+\s+(?:meu\s+)?treino|rever\s+treino/i.test(t)) return ccR_AjusteTreino();
+  if(/sugest\w+\s+de\s+(?:refeição|comida|o\s+que\s+comer)/i.test(t)) return ccR_SugestaoRefeicao();
+  if(/insight|analise|o\s+que\s+detectou|como\s+me\s+vê/i.test(t)) return ccR_Insights();
+
+  // ═══ PESO — perguntar ═══
+  if(/(?:quero\s+)?atualizar\s+(?:meu\s+)?peso/i.test(t)) {
+    CC._aguardando = 'peso';
+    return { texto:'Qual é o seu peso atual em kg?', acoes:[], extra:null, pendente:null };
+  }
+
+  // ═══ SONO — perguntar ═══
+  if(/atualizar\s+(?:meu\s+)?sono|registrar\s+sono/i.test(t)) {
+    CC._aguardando = 'sono';
+    return { texto:'Quantas horas você dormiu hoje?', acoes:[], extra:null, pendente:null };
+  }
+
+  // ═══ REFEIÇÃO — perguntar ═══
+  if(/registrar\s+(?:uma\s+)?refeição|o\s+que\s+devo\s+comer/i.test(t)) {
+    CC._aguardando = 'refeicao';
+    return { texto:'Me diga o que comeu! Por exemplo: <em>"comi 200g de arroz, 150g de frango e uma banana"</em>.', acoes:[], extra:null, pendente:null };
+  }
+
+  return ccR_Fallback(texto);
 }
 
-// ── RESPOSTAS ────────────────────────────────
-function ccRespostaSono(h) {
+// ═══════════════════════════════════════════
+// RESPOSTAS
+// ═══════════════════════════════════════════
+
+function ccR_Sono(h) {
+  CC._aguardando = null;
+  const anterior = CC.habitos.sono;
   CC.habitos.sono    = h;
-  CC.habitos.energia = h>=8?8:h>=7?7:h>=6?5:h>=5?4:2;
+  CC.habitos.energia = h>=8?8 : h>=7?7 : h>=6?5 : h>=5?4 : 2;
   CC.treino.ajustado = h < 6;
-  CC.treino.status   = h>=7?'Normal':h>=6?'Moderado':h>=5?'Leve':'Descanso';
+  CC.treino.status   = h>=7 ? 'Normal' : h>=6 ? 'Moderado' : h>=5 ? 'Leve' : 'Descanso ativo';
   const recup = Math.round(Math.min(100, h/9*100));
-  const ok = h>=8?'Ótimo sono!':h>=7?'Bom descanso.':h>=6?'Abaixo do ideal.':'Sono insuficiente.';
-  ccTimeline('Sono', `${h}h registrado`);
-  ccAtualizarContexto();
+  const cor   = h>=7 ? 'var(--green)' : h>=6 ? 'var(--amber)' : 'var(--coral)';
+  const msg   = h>=8 ? 'Ótimo sono!' : h>=7 ? 'Bom descanso.' : h>=6 ? 'Abaixo do ideal.' : h>=5 ? 'Sono insuficiente.' : 'Sono crítico!';
+
+  // Sincronizar com NERAS global
+  if(NERAS?.habitos) {
+    NERAS.habitos.sono    = h;
+    NERAS.habitos.energia = CC.habitos.energia;
+    if(h < 6) NERAS.habitos.estresse = Math.min(10, (NERAS.habitos.estresse||3) + 2);
+  }
+  CC.addMem('Sono', `${h}h registrado`, cor);
+  ccSyncGlobal();
+
+  const acoes = [
+    `Sono atualizado: ${h}h`,
+    `Recuperação recalculada: ${recup}%`,
+    `Energia ajustada: ${CC.habitos.energia}/10`,
+    h<6 ? `Treino ajustado para intensidade ${CC.treino.status}` : 'Treino mantido em intensidade normal',
+    'Radar corporal atualizado',
+    anterior !== null ? `Variação: ${anterior}h → ${h}h` : null,
+    'Timeline registrada',
+  ].filter(Boolean);
+
   return {
-    texto: `Obrigado por me avisar! ${ok} Entendi que você dormiu ${h}h.${h<7?' Isso pode impactar sua recuperação.':''}`,
-    acoes: [`Sono registrado: ${h}h`,`Recuperação calculada: ${recup}%`,h<6?'Treino ajustado automaticamente':'Treino mantido em intensidade normal',h<5?'Foco em técnica e mobilidade hoje':null,'Timeline atualizada'].filter(Boolean),
-    extra: null
+    texto: `${msg} Entendido — você dormiu <strong>${h}h</strong> esta noite.${h<7?' Isso pode reduzir a síntese proteica e afetar o desempenho. Veja os ajustes que fiz:':' Ótimas condições para um bom treino!'}`,
+    acoes,
+    extra: null,
+    pendente: null,
+    motivos: [`Sono: ${h}h (ideal: 7–9h)`, `Recuperação calculada: ${recup}%`, `Impacto na síntese proteica: ${h<6?'alto':'baixo'}`],
+    confianca: 'Alta'
   };
 }
 
-function ccRespostaPeso(kg) {
-  const anterior = NERAS?.perfil?.peso || NERAS?.estatisticas?.peso || 78;
+function ccR_Peso(kg) {
+  CC._aguardando = null;
+  const anterior = NERAS?.perfil?.peso || NERAS?.estatisticas?.peso || CC.habitos._pesoAnterior || 78;
+  CC.habitos._pesoAnterior = kg;
+
+  // Atualizar NERAS global
   if(NERAS?.perfil)        NERAS.perfil.peso = kg;
   if(NERAS?.estatisticas)  NERAS.estatisticas.peso = kg;
-  try { const p=JSON.parse(localStorage.getItem('neras_perfil')||'{}'); p.peso=kg; localStorage.setItem('neras_perfil',JSON.stringify(p)); } catch(_){}
+  try {
+    const np = JSON.parse(localStorage.getItem('neras_perfil')||'{}'); np.peso = kg;
+    localStorage.setItem('neras_perfil', JSON.stringify(np));
+    const ns = JSON.parse(localStorage.getItem('neras_stats')||'{}');  ns.peso = kg;
+    localStorage.setItem('neras_stats', JSON.stringify(ns));
+  } catch(_){}
+
+  // Calcular IMC
+  const alt = NERAS?.perfil?.altura || 179;
+  const imc = (kg / ((alt/100)**2)).toFixed(1);
   const diff = +(kg - anterior).toFixed(1);
-  ccTimeline('Peso', `${kg}kg registrado`);
-  ccAtualizarContexto();
-  atualizarMetricas?.();
+  const sinal = diff >= 0 ? '+' : '';
+  const cor = diff > 0 ? 'var(--amber)' : 'var(--green)';
+  const meta = NERAS?.perfil?.objetivo==='emagrecimento' ? Math.round(anterior*0.9) : Math.round(anterior*1.05);
+
+  CC.addMem('Peso', `${kg}kg registrado`, 'var(--blue)');
+  ccSyncGlobal();
+
   return {
-    texto: `Peso registrado com sucesso! 📊`,
-    acoes: ['Peso atualizado na evolução','Gráfico de evolução','Timeline atualizado'],
-    extra: { tipo:'peso', anterior, atual:kg, diff:(diff>=0?'+':'')+diff, meta:70 }
+    texto: `Peso registrado com sucesso! 📊 IMC calculado: <strong>${imc}</strong>.`,
+    acoes: [
+      `Peso atualizado: ${kg}kg`,
+      `IMC recalculado: ${imc}`,
+      'Perfil sincronizado',
+      'Gráfico de evolução atualizado',
+      'Dashboard atualizado',
+      'Timeline registrada',
+    ],
+    extra: { tipo:'peso', anterior, atual:kg, diff:sinal+diff, meta },
+    pendente: null,
+    motivos: [`Peso anterior: ${anterior}kg`, `Variação: ${sinal}${diff}kg`, `IMC: ${imc}`],
+    confianca: 'Alta'
   };
 }
 
-function ccRespostaAlimento(descricao) {
-  let tKcal=0,tProt=0,tCarb=0,tGord=0;
-  const partes = descricao.split(/,\s*|\s+e\s+/i);
-  partes.forEach(p => {
-    const gm = p.match(/(\d+)\s*g\s+(?:de\s+)?(\w+)/i);
-    const nm = p.match(/\b(arroz|frango|feijão|ovo|banana|whey|batata|aveia|pão|leite|maçã|iogurte)\b/i);
-    let g=100, nome='';
-    if(gm){ g=parseInt(gm[1]); nome=gm[2]; } else if(nm){ nome=nm[1]; }
-    const a = CC_FOODS[nome.toLowerCase()];
-    if(a){ const f=g/100; tKcal+=a.kcal*f; tProt+=a.prot*f; tCarb+=a.carb*f; tGord+=a.gord*f; }
+function ccR_Alimento(descricao) {
+  let tK=0, tP=0, tC=0, tG=0;
+  const descLower = descricao.toLowerCase();
+
+  // Extrair ingredientes com gramas
+  const ingredientes = [];
+  const regexG = /(\d+(?:[.,]\d+)?)\s*g\s+de\s+([a-záàâãéêíóôõúç_\s]+?)(?=,|\se\s|\d|$)/gi;
+  let m;
+  while((m = regexG.exec(descLower)) !== null) {
+    ingredientes.push({ g: parseFloat(m[1].replace(',','.')), nome: m[2].trim() });
+  }
+
+  // Fallback: detectar nomes sem gramas
+  if(ingredientes.length === 0) {
+    Object.keys(CC_FOODS).forEach(nome => {
+      if(descLower.includes(nome)) ingredientes.push({ g:100, nome });
+    });
+  }
+
+  // Calcular totais
+  ingredientes.forEach(({g, nome}) => {
+    const chave = Object.keys(CC_FOODS).find(k => nome.includes(k) || k.includes(nome));
+    const a = CC_FOODS[chave];
+    if(a) { const f=g/100; tK+=a.k*f; tP+=a.p*f; tC+=a.c*f; tG+=a.g*f; }
   });
-  if(tKcal===0){tKcal=400;tProt=25;tCarb=45;tGord=12;}
-  CC.nutricao.cal+=Math.round(tKcal); CC.nutricao.prot+=Math.round(tProt);
-  CC.nutricao.carb+=Math.round(tCarb); CC.nutricao.gord+=Math.round(tGord);
-  // Sincronizar com diário do módulo Nutrição
-  if(typeof diario !== 'undefined') diario.push({nome:descricao.slice(0,30),qtde:100,kcal:tKcal,prot:tProt,carb:tCarb,gord:tGord,refeicao:'Geral'});
-  if(typeof atualizarMacros === 'function') atualizarMacros();
+
+  // Se não identificou nada, usar estimativa conservadora
+  if(tK === 0) { tK=380; tP=24; tC=42; tG=11; }
+
+  tK=Math.round(tK); tP=Math.round(tP); tC=Math.round(tC); tG=Math.round(tG);
+
+  CC.nutricao.cal  += tK;
+  CC.nutricao.prot += tP;
+  CC.nutricao.carb += tC;
+  CC.nutricao.gord += tG;
+
+  // Sincronizar com módulo de nutrição
+  if(typeof diario !== 'undefined') {
+    diario.push({ nome: descricao.slice(0,40), qtde:100, kcal:tK, prot:tP, carb:tC, gord:tG, refeicao:'Via NERAS AI' });
+  }
+  if(typeof atualizarMacros === 'function') try { atualizarMacros(); } catch(_){}
+
   const metaCal = typeof calcularMetasNutri === 'function' ? calcularMetasNutri().metaCal : 2400;
   CC.nutricao.metaCal = metaCal;
-  ccTimeline('Refeição', `${Math.round(tKcal)} kcal registradas`);
-  ccAtualizarContexto();
+
+  CC.addMem('Refeição', `${tK}kcal registradas`, 'var(--amber)');
+  ccSyncGlobal();
+
   return {
-    texto: `Perfeito! Registrei sua refeição.\nAqui está o resumo nutricional estimado:`,
-    acoes:[`Refeição adicionada ao diário`,`Calorias do dia: ${CC.nutricao.cal.toLocaleString('pt-BR')} / ${metaCal.toLocaleString('pt-BR')} kcal`,'Macros atualizados','Progresso nutricional atualizado'],
-    extra:{ tipo:'macro', kcal:Math.round(tKcal), prot:Math.round(tProt), carb:Math.round(tCarb), gord:Math.round(tGord) }
+    texto: `Perfeito! Registrei sua refeição. Aqui está o resumo nutricional estimado:`,
+    acoes: [
+      'Refeição adicionada ao diário de nutrição',
+      `Total do dia: ${CC.nutricao.cal.toLocaleString('pt-BR')} / ${metaCal.toLocaleString('pt-BR')} kcal`,
+      `Proteína acumulada: ${CC.nutricao.prot}g`,
+      'Painel de Nutrição atualizado',
+      'Timeline registrada',
+    ],
+    extra: { tipo:'macro', kcal:tK, prot:tP, carb:tC, gord:tG },
+    pendente: null,
+    motivos: [`Alimentos identificados na mensagem`, `Tabela nutricional de referência usada`, ingredientes.length ? `Ingredientes: ${ingredientes.map(i=>i.nome).join(', ')}` : 'Estimativa média usada'],
+    confianca: ingredientes.length > 0 ? 'Média' : 'Baixa'
   };
 }
 
-function ccRespostaDor(parte) {
-  if(!CC.seguranca.lesoes.includes(parte)) CC.seguranca.lesoes.push(parte);
-  CC.seguranca.risco = CC.seguranca.lesoes.length>1?'Moderado':'Baixo';
-  CC.seguranca.score = Math.max(40, 92 - CC.seguranca.lesoes.length*15);
-  CC.treino.ajustado = true; CC.treino.status = 'Adaptado';
-  // Sincronizar com NERAS.perfil.lesoes
-  if(NERAS?.perfil?.lesoes && !NERAS.perfil.lesoes.includes(parte)) NERAS.perfil.lesoes.push(parte);
-  if(typeof renderFisio === 'function') renderFisio();
-  if(typeof renderTreino === 'function') renderTreino();
-  ccTimeline('Dor', `${parte} relatado`);
-  ccAtualizarContexto();
+function ccR_Dor(parte) {
+  const parteNorm = parte.replace(/\s+/g,' ').trim();
+
+  // Criar ação pendente de aprovação
+  const pendente = {
+    descricao: `Registrar dor em ${parteNorm} e adaptar treino e fisioterapia`,
+    acoes: [
+      `Dor em "${parteNorm}" registrada`,
+      'Exercícios contraindicados bloqueados',
+      'Score de segurança recalculado',
+      'Fisioterapia adaptada',
+      'Treino ajustado',
+      'Timeline registrada',
+    ],
+    fn: () => {
+      if(!CC.seguranca.lesoes.includes(parteNorm)) CC.seguranca.lesoes.push(parteNorm);
+      CC.seguranca.risco  = CC.seguranca.lesoes.length > 1 ? 'Moderado' : 'Baixo';
+      CC.seguranca.score  = Math.max(40, 92 - CC.seguranca.lesoes.length * 15);
+      CC.treino.ajustado  = true;
+      CC.treino.status    = 'Adaptado';
+      // Sincronizar com NERAS
+      if(NERAS?.perfil?.lesoes && !NERAS.perfil.lesoes.includes(parteNorm)) NERAS.perfil.lesoes.push(parteNorm);
+      if(typeof renderFisio   === 'function') try { renderFisio();   } catch(_){}
+      if(typeof renderTreino  === 'function') try { renderTreino();  } catch(_){}
+      if(typeof renderCerebro === 'function') try { renderCerebro(); } catch(_){}
+      CC.addMem('Dor', `${parteNorm} registrado`, 'var(--coral)');
+      ccSyncGlobal();
+    }
+  };
+
   return {
-    texto:`Entendido. Registrei a dor em <strong>${parte}</strong> e ajustei seu plano automaticamente.`,
-    acoes:[`Dor em ${parte} registrada`,'Exercícios contraindicados bloqueados','Score de segurança recalculado','Fisioterapia atualizada','Treino adaptado'],
-    extra:null
+    texto: `Entendido. Registrei que você está sentindo dor em <strong>${parteNorm}</strong>. Posso adaptar seu plano para proteger essa região. Deseja aplicar as alterações?`,
+    acoes: [],
+    extra: null,
+    pendente,
+    motivos: [`Dor em "${parteNorm}" relatada`, `Score atual: ${CC.seguranca.score}/100`, 'Prevenção de agravamento recomendada', 'Exercícios de impacto devem ser evitados'],
+    confianca: 'Alta'
   };
 }
 
-function ccRespostaTreinoOk() {
-  CC.treino.status='Concluído'; CC.treino.ajustado=false;
-  if(NERAS?.estatisticas) { NERAS.estatisticas.streak=(NERAS.estatisticas.streak||0)+1; }
-  if(typeof atualizarMetricas==='function') atualizarMetricas();
-  ccTimeline('Treino','Treino concluído');
-  ccAtualizarContexto();
-  return { texto:`Ótimo trabalho! 💪 Treino registrado como concluído. Consistência é o fator mais importante para o progresso!`, acoes:['Treino marcado como concluído','Streak atualizado','Timeline registrada'], extra:null };
+function ccR_TreinoOk(t) {
+  CC.treino.status    = 'Concluído';
+  CC.treino.concluido = true;
+  CC.treino.ajustado  = false;
+
+  // Detectar exercício específico (ex: "fiz supino hoje")
+  const exMatch = t.match(/(?:fiz|completei)\s+(?:o\s+)?(?:exercício\s+de\s+)?(\w+(?:\s+\w+)?)\s*(?:hoje)?/i);
+  const exNome = exMatch ? exMatch[1] : null;
+
+  if(NERAS?.estatisticas) NERAS.estatisticas.streak = (NERAS.estatisticas.streak||0) + 1;
+  if(typeof atualizarMetricas === 'function') try { atualizarMetricas(); } catch(_){}
+
+  CC.addMem('Treino', exNome ? `${exNome} concluído` : 'Treino do dia concluído', 'var(--green)');
+  ccSyncGlobal();
+
+  return {
+    texto: `Ótimo trabalho! 💪 Treino${exNome ? ' de ' + exNome : ''} registrado como concluído. Consistência é o maior fator de progresso a longo prazo.`,
+    acoes: [
+      'Treino marcado como concluído',
+      'Streak de treinos atualizado',
+      'Módulo Evolução atualizado',
+      'Dashboard atualizado',
+      'Timeline registrada',
+    ],
+    extra: null,
+    pendente: null,
+    motivos: ['Conclusão do treino confirmada', 'Streak incrementado'],
+    confianca: 'Alta'
+  };
 }
 
-function ccRespostaTreinoFraco() {
-  CC.treino.status='Ajustado'; CC.treino.ajustado=true;
-  ccTimeline('Treino','Fadiga detectada — plano ajustado');
-  ccAtualizarContexto();
-  return { texto:`Tranquilo, isso acontece. Detectei sinais de fadiga. Ajustei o volume e intensidade para hoje.`, acoes:['Fadiga registrada','Volume reduzido em 20%','Foco em técnica hoje','Recuperação prioritária'], extra:null };
+function ccR_TreinoFalha(t) {
+  // Detectar exercício falho
+  const exMatch = t.match(/falhei\s+(?:no\s+)?(\w+(?:\s+\w+)?)/i) || t.match(/não\s+consegui\s+(?:fazer\s+)?(?:o\s+)?(\w+)/i);
+  const exNome = exMatch ? exMatch[1] : null;
+
+  CC.treino.ajustado = true;
+  CC.treino.status   = 'Ajustado';
+
+  CC.addMem('Treino', exNome ? `Falha em ${exNome}` : 'Fadiga detectada — ajuste aplicado', 'var(--amber)');
+  ccSyncGlobal();
+
+  return {
+    texto: `Tranquilo, isso faz parte do processo.${exNome ? ` Registrei a falha no <strong>${exNome}</strong>.` : ''} Detectei sinais de fadiga. Ajustei o volume e intensidade para hoje com foco em técnica.`,
+    acoes: [
+      exNome ? `Falha em "${exNome}" registrada` : 'Fadiga registrada',
+      'Volume reduzido em 20%',
+      'Intensidade ajustada para moderada',
+      'Foco em técnica aplicado',
+      'Treino Meu Treino atualizado',
+    ],
+    extra: null,
+    pendente: null,
+    motivos: ['Fadiga ou falha relatada', 'Histórico de treinos considerado', 'Progressão gradual recomendada'],
+    confianca: 'Alta'
+  };
 }
 
-function ccRespostaAgua(L) {
-  CC.habitos.agua = Math.min(3, CC.habitos.agua + L);
-  ccTimeline('Hidratação', `+${L}L registrado`);
-  ccAtualizarContexto();
-  const falta = (3 - CC.habitos.agua).toFixed(1);
-  return { texto:`Registrei ${L}L. Total hoje: ${CC.habitos.agua.toFixed(1)}L de 3L. ${CC.habitos.agua>=3?'🎯 Meta atingida!':` Faltam ${falta}L para a meta.`}`, acoes:['Hidratação atualizada'], extra:null };
+function ccR_Agua(L) {
+  CC.habitos.agua = Math.min(3.5, CC.habitos.agua + L);
+  if(NERAS?.habitos) NERAS.habitos.agua = CC.habitos.agua;
+  CC.addMem('Água', `+${L}L registrado`, 'var(--blue)');
+  ccSyncGlobal();
+  const total = CC.habitos.agua;
+  const falta = Math.max(0, 3 - total).toFixed(1);
+  const atingiu = total >= 3;
+  return {
+    texto: `Registrei <strong>${L}L</strong> de água.${atingiu ? ' 🎯 Parabéns, meta diária atingida!' : ''}\n\nTotal hoje: <strong>${total.toFixed(1)}L</strong> de 3L meta${!atingiu ? ` — faltam ${falta}L` : ''}.`,
+    acoes: ['Hidratação atualizada', 'Radar de nutrição atualizado', atingiu ? '🎯 Meta diária atingida!' : `${falta}L restantes para a meta`],
+    extra: null,
+    pendente: null,
+    motivos: [`Hidratação acumulada: ${total.toFixed(1)}L`, 'Meta recomendada: 3L/dia'],
+    confianca: 'Alta'
+  };
 }
 
-function ccRespostaHumor(t) {
-  const pos = /bem|disposto|animado|ótimo/i.test(t);
-  CC.habitos.humor=pos?8:4; CC.habitos.energia=pos?7:4;
-  ccAtualizarContexto();
-  return { texto:pos?`Que ótimo! Energia alta registrada. Boas condições para treino hoje.`:`Entendido. Energia mais baixa registrada. Recomendo intensidade moderada hoje.`, acoes:['Humor e energia atualizados'], extra:null };
+function ccR_Humor(positivo, t) {
+  CC.habitos.humor   = positivo ? '😄' : '😔';
+  CC.habitos.energia = positivo ? 7 : 4;
+  if(NERAS?.habitos) { NERAS.habitos.humor = CC.habitos.humor; NERAS.habitos.energia = CC.habitos.energia; }
+  ccSyncGlobal();
+  return {
+    texto: positivo
+      ? `Que ótimo! Energia e humor elevados registrados. Condições ideais para treino de alta performance hoje. 💪`
+      : `Entendido. Registrei energia mais baixa. Recomendo intensidade moderada e boa hidratação hoje.`,
+    acoes: ['Humor atualizado', 'Energia atualizada', 'Coach NERAS atualizado'],
+    extra: null,
+    pendente: null,
+    motivos: [`Humor: ${CC.habitos.humor}`, `Energia: ${CC.habitos.energia}/10`],
+    confianca: 'Média'
+  };
 }
 
-function ccResumoDia() {
-  const h=CC.habitos; const n=CC.nutricao;
-  const its=[];
-  if(h.sono) its.push(`✦ Sono: ${h.sono}h ${h.sono>=7?'✓':'⚠'}`);
-  if(n.cal>0) its.push(`✦ Nutrição: ${n.cal.toLocaleString('pt-BR')} / ${n.metaCal||2400} kcal`);
-  if(h.agua>0) its.push(`✦ Água: ${h.agua.toFixed(1)} / 3,0L`);
-  its.push(`✦ Treino: ${CC.treino.status}`);
-  its.push(`✦ Score de segurança: ${CC.seguranca.score}/100`);
-  return { texto:`<strong>Resumo do seu dia:</strong><br><br>${its.join('<br>')||'Nenhum dado registrado ainda. Me conta como foi seu dia!'}`, acoes:[], extra:null };
+function ccR_ResumoDia() {
+  const h = CC.habitos; const n = CC.nutricao; const score = ccScore();
+  const metaCal = n.metaCal || 2400;
+  const pct = n.cal > 0 ? Math.round(n.cal/metaCal*100) : 0;
+  const items = [];
+  if(h.sono !== null) items.push(`✦ Sono: <strong>${h.sono}h</strong> ${h.sono>=7?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--amber)">⚠</span>'}`);
+  else items.push('✦ Sono: <span style="color:var(--text3)">não registrado</span>');
+  items.push(`✦ Nutrição: <strong>${n.cal.toLocaleString('pt-BR')}</strong> / ${metaCal.toLocaleString('pt-BR')} kcal (${pct}%)`);
+  items.push(`✦ Água: <strong>${h.agua.toFixed(1)}L</strong> de 3L ${h.agua>=3?'<span style="color:var(--green)">✓</span>':''}`);
+  items.push(`✦ Treino: <strong>${CC.treino.status}</strong>`);
+  items.push(`✦ Recuperação: <strong>${h.sono!==null?Math.round(h.sono/9*100)+'%':'—'}</strong>`);
+  items.push(`✦ Score do dia: <strong style="color:var(--green)">${score}/10</strong>`);
+  return {
+    texto: `<strong>Resumo do seu dia:</strong><br><br>${items.join('<br>')}`,
+    acoes: [], extra: null, pendente: null
+  };
 }
 
-function ccResumoSemana() {
-  const p=NERAS?.perfil||{}; const h=CC.habitos;
-  return { texto:`<strong>📊 Resumo da semana:</strong><br><br>Sono médio: ${h.sono?h.sono+'h':'não registrado'} · Treino: ${CC.treino.status} · Peso atual: ${p.peso||'—'}kg<br><br>Continue registrando para análises mais precisas ao longo da semana.`, acoes:[], extra:null };
+function ccR_ResumoSemana() {
+  const p = NERAS?.perfil||{};
+  return {
+    texto: `<strong>📊 Resumo da semana:</strong><br><br>
+      Sono médio: <strong>${CC.habitos.sono?CC.habitos.sono+'h':'não registrado'}</strong><br>
+      Treino: <strong>${CC.treino.status}</strong><br>
+      Peso atual: <strong>${p.peso||'—'}kg</strong><br>
+      Hidratação hoje: <strong>${CC.habitos.agua.toFixed(1)}L</strong><br>
+      Calorias hoje: <strong>${CC.nutricao.cal.toLocaleString('pt-BR')} kcal</strong><br><br>
+      Continue registrando para análises mais precisas ao longo da semana.`,
+    acoes: [], extra: null, pendente: null
+  };
 }
 
-function ccAjusteTreino() {
-  const h=CC.habitos;
-  const int = !h.sono?'Normal':h.sono<5?'Descanso ativo':h.sono<6?'Leve':h.sono<7?'Moderado':'Alta';
-  CC.treino.status=int; ccAtualizarContexto();
-  if(typeof renderTreino==='function') renderTreino();
-  return { texto:`Analisei seu estado e ajustei o treino para intensidade <strong>${int}</strong>.\n\n${h.sono<6?'→ Sono baixo: menos volume, foco em técnica\n→ Priorize recuperação':'→ Condições adequadas para treino normal\n→ Progressão de carga liberada'}`, acoes:['Treino ajustado','Banner Meu Treino atualizado'], extra:null };
+function ccR_AjusteTreino() {
+  const h = CC.habitos;
+  const int = !h.sono ? 'Normal' : h.sono<5 ? 'Descanso ativo' : h.sono<6 ? 'Leve' : h.sono<7 ? 'Moderado' : 'Alta';
+  CC.treino.status   = int;
+  CC.treino.ajustado = h.sono !== null && h.sono < 7;
+  if(typeof renderTreino === 'function') try { renderTreino(); } catch(_){}
+  ccSyncGlobal();
+  return {
+    texto: `Analisei seu estado atual e ajustei o treino para intensidade <strong>${int}</strong>.\n\n${h.sono && h.sono < 6 ? '→ Sono baixo: menor volume, foco em técnica e mobilidade' : '→ Condições adequadas para treino normal com progressão'}`,
+    acoes: ['Intensidade do treino ajustada', 'Banner de Meu Treino atualizado', 'Segurança verificada'],
+    extra: null,
+    pendente: null,
+    motivos: [
+      `Sono: ${h.sono ? h.sono+'h' : 'não registrado'}`,
+      `Energia: ${h.energia ? h.energia+'/10' : 'não registrada'}`,
+      `Score de segurança: ${CC.seguranca.score}/100`
+    ],
+    confianca: h.sono ? 'Alta' : 'Média'
+  };
 }
 
-function ccSugestaoRefeicao() {
-  const obj=NERAS?.perfil?.objetivo||'hipertrofia';
-  const falta=Math.max(0,(CC.nutricao.metaCal||2400)-CC.nutricao.cal);
-  const sug=obj==='emagrecimento'?'Salada grande + atum 100g + azeite':'Frango grelhado 200g + batata doce 150g + salada';
-  return { texto:`Baseado no objetivo de <strong>${obj}</strong> e ${falta.toLocaleString('pt-BR')} kcal restantes, sugiro:\n\n→ ${sug}\n\nEssa refeição equilibra proteína e carboidratos para agora.`, acoes:[], extra:null };
+function ccR_SugestaoRefeicao() {
+  const obj = NERAS?.perfil?.objetivo || 'hipertrofia';
+  const metaCal = CC.nutricao.metaCal || 2400;
+  const falta = Math.max(0, metaCal - CC.nutricao.cal);
+  const sugestoes = {
+    hipertrofia:   'Frango grelhado 200g + batata doce 150g + brócolis',
+    emagrecimento: 'Salada grande + atum 100g + azeite + limão',
+    força:         'Carne vermelha 180g + arroz integral 150g + legumes',
+    resistência:   'Macarrão integral 100g + frango 150g + molho de tomate',
+  };
+  const sug = sugestoes[obj] || sugestoes.hipertrofia;
+  return {
+    texto: `Baseado no objetivo de <strong>${obj}</strong> e <strong>${falta.toLocaleString('pt-BR')} kcal</strong> restantes para hoje:\n\n→ ${sug}\n\nEssa combinação equilibra proteína, carboidratos e gorduras boas para o momento.`,
+    acoes: [], extra: null, pendente: null
+  };
 }
 
-function ccInsights() {
-  const h=CC.habitos; const n=CC.nutricao;
-  const its=[];
-  if(h.sono!==null&&h.sono<7) its.push(`✦ Sono abaixo do ideal (${h.sono}h)`);
-  if(n.cal>0&&n.cal<(n.metaCal||2400)*0.5) its.push(`✦ Calorias abaixo da meta`);
-  if(CC.seguranca.lesoes.length) its.push(`✦ Dor registrada: ${CC.seguranca.lesoes.join(', ')}`);
-  if(!its.length) its.push('✦ Continue registrando para gerar insights detalhados.');
-  return { texto:`🔍 <strong>Análise NERAS:</strong><br><br>${its.join('<br>')}<br><br><strong>Sugestão:</strong> ${h.sono<6?'Priorize sono e recuperação.':'Mantenha a consistência!'}`, acoes:[], extra:null };
+function ccR_Insights() {
+  const h = CC.habitos; const n = CC.nutricao;
+  const metaCal = n.metaCal || 2400;
+  const reds = [], ambs = [], grns = [];
+
+  if(h.sono !== null && h.sono < 5)        reds.push('Sono crítico — risco de fadiga severa');
+  else if(h.sono !== null && h.sono < 6)   reds.push(`Sono abaixo do ideal (${h.sono}h)`);
+  if(h.agua < 1 && h.agua > 0)             reds.push('Hidratação muito baixa');
+  else if(h.agua < 1.5 && h.agua > 0)      ambs.push(`Hidratação baixa (${h.agua.toFixed(1)}L)`);
+  if(CC.seguranca.lesoes.length)            ambs.push(`Dor registrada: ${CC.seguranca.lesoes.join(', ')}`);
+  if(n.cal > 0 && n.cal < metaCal * 0.5)   ambs.push('Calorias muito abaixo da meta');
+  if(CC.treino.concluido)                   grns.push('Treino concluído hoje 💪');
+  if(h.sono !== null && h.sono >= 7)        grns.push('Sono adequado');
+  if(h.agua >= 2.5)                         grns.push('Boa hidratação');
+  if(n.cal >= metaCal * 0.85)              grns.push('Meta calórica quase atingida');
+
+  const linhas = [
+    ...reds.map(x=>`🔴 ${x}`),
+    ...ambs.map(x=>`🟡 ${x}`),
+    ...grns.map(x=>`🟢 ${x}`),
+  ];
+  if(!linhas.length) linhas.push('Continue registrando seu dia para gerar insights detalhados!');
+
+  return {
+    texto: `🔍 <strong>Análise NERAS do seu dia:</strong><br><br>${linhas.join('<br>')}<br><br>Score do dia: <strong style="color:var(--green)">${ccScore()}/10</strong>`,
+    acoes: [], extra: null, pendente: null
+  };
 }
 
-function ccFallback(texto) {
-  const r=['Me conta mais! Por exemplo: quanto dormiu, o que comeu, como foi o treino, ou se está sentindo alguma dor.','Para eu ajudar, me diga: sono, peso, alimentação ou como se sente hoje.','Pode me contar sobre seu dia em linguagem natural — eu interpreto e atualizo tudo automaticamente.'];
-  return { texto:r[Math.floor(Math.random()*r.length)], acoes:[], extra:null };
+function ccR_Fallback(texto) {
+  const sugestoes = [
+    'Quanto dormiu hoje?',
+    'Como foi o treino?',
+    'O que comeu?',
+    'Como está se sentindo?',
+  ];
+  const pick = sugestoes[Math.floor(Math.random()*sugestoes.length)];
+  const respostas = [
+    `Entendido! Para atualizar a plataforma automaticamente, me conta: <em>${pick}</em>`,
+    `Pode me dar mais detalhes? Por exemplo: quanto dormiu, o que comeu, como foi o treino, ou se está sentindo alguma dor.`,
+    `Analisei sua mensagem mas preciso de mais contexto. Tente me dizer: <em>${pick}</em>`,
+  ];
+  return { texto: respostas[Math.floor(Math.random()*respostas.length)], acoes:[], extra:null, pendente:null };
 }
 
-// ── TIMELINE ────────────────────────────────
-function ccTimeline(tipo, desc) {
-  if(typeof timelineAutoEvento==='function') timelineAutoEvento('cc_'+tipo+'_'+Date.now(), tipo+' via Chat', desc+' — registrado pelo NERAS AI.', tipo==='Treino'?'var(--green)':tipo==='Dor'?'var(--coral)':tipo==='Sono'?'var(--purple)':tipo==='Peso'?'var(--blue)':'var(--amber)', tipo==='Treino'?'💪':tipo==='Dor'?'⚠':tipo==='Peso'?'⚖':'●');
+// ── SCORE DO DIA ────────────────────────────
+function ccScore() {
+  let s = 5;
+  const h = CC.habitos; const n = CC.nutricao;
+  if(h.sono !== null)   s += h.sono>=7?2 : h.sono>=6?1 : h.sono>=5?0 : -1;
+  if(h.agua > 0)        s += h.agua>=2.5?1 : h.agua>=1.5?0.5 : 0;
+  if(n.cal > 0)         s += n.cal>=(n.metaCal||2400)*0.8?1 : 0;
+  if(CC.treino.concluido) s += 2;
+  if(CC.seguranca.lesoes.length) s -= 0.5;
+  return Math.max(1, Math.min(10, +(Math.round(s*10)/10).toFixed(1)));
 }
 
-// ── ATUALIZAR PAINEL ─────────────────────────
-function ccAtualizarContexto() {
-  const h=CC.habitos; const n=CC.nutricao; const p=NERAS?.perfil||{};
-  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  const setStyle=(id,prop,v)=>{const e=document.getElementById(id);if(e)e.style[prop]=v;};
-
-  set('cc-ctx-peso', (p.peso||78).toFixed(1).replace('.',',')+' kg');
-  set('cc-ctx-peso-sub','Perfil atual');
-
-  if(h.sono!==null){
-    set('cc-ctx-sono',h.sono+'h'); set('cc-ctx-sono-sub','Hoje');
-    const sb=document.getElementById('cc-ctx-sono-badge');
-    if(sb){sb.textContent=h.sono>=7?'Ideal':h.sono>=6?'Baixo':'Crítico';sb.className='cc-badge '+(h.sono>=7?'cc-badge-ok':h.sono>=6?'cc-badge-warn':'cc-badge-risk');}
+// ── SINCRONIZAÇÃO GLOBAL ────────────────────
+function ccSyncGlobal() {
+  // NERAS.habitos
+  if(NERAS?.habitos) {
+    if(CC.habitos.sono !== null) NERAS.habitos.sono    = CC.habitos.sono;
+    if(CC.habitos.energia !== null) NERAS.habitos.energia = CC.habitos.energia;
+    NERAS.habitos.agua = CC.habitos.agua;
+    if(CC.habitos.humor) NERAS.habitos.humor = CC.habitos.humor;
   }
-  if(h.energia!==null){
-    set('cc-ctx-energia',h.energia+'/10'); set('cc-ctx-energia-sub',h.energia>=7?'Alta':h.energia>=5?'Média':'Baixa');
-    const et=document.getElementById('cc-ctx-energia-trend');
-    if(et){et.textContent=h.energia>=7?'↑':h.energia>=5?'→':'↓';et.style.color=h.energia>=7?'var(--green)':h.energia>=5?'var(--amber)':'var(--coral)';}
-  }
-  const recup=h.sono!==null?Math.round(Math.min(100,h.sono/9*100)):null;
-  if(recup!==null){
-    set('cc-ctx-recup',recup+'%'); set('cc-ctx-recup-sub',recup>=70?'Boa':recup>=50?'Atenção':'Baixa');
-    const rb=document.getElementById('cc-ctx-recup-badge');
-    if(rb){rb.textContent=recup>=70?'OK':recup>=50?'Atenção':'Baixa';rb.className='cc-badge '+(recup>=70?'cc-badge-ok':recup>=50?'cc-badge-warn':'cc-badge-risk');}
-  }
-  const metaCal=n.metaCal||2400;
-  if(n.cal>0){
-    const pct=Math.min(100,Math.round(n.cal/metaCal*100));
-    set('cc-ctx-cal',n.cal.toLocaleString('pt-BR')+' kcal'); set('cc-ctx-cal-meta','de '+metaCal.toLocaleString('pt-BR')+' kcal');
-    set('cc-cal-pct',pct+'%');
-    const r=document.getElementById('cc-cal-ring'); if(r) r.style.strokeDashoffset=(69.1-(69.1*pct/100));
-  }
-  if(h.agua>0){
-    const pct=Math.min(100,Math.round(h.agua/3*100));
-    set('cc-ctx-agua',h.agua.toFixed(1).replace('.',',')+' L');
-    set('cc-agua-pct',pct+'%');
-    const r=document.getElementById('cc-agua-ring'); if(r) r.style.strokeDashoffset=(69.1-(69.1*pct/100));
-  }
-  const tCor=CC.treino.status==='Concluído'?'var(--green)':CC.treino.ajustado?'var(--amber)':'var(--green)';
-  set('cc-ctx-treino',CC.treino.status); setStyle('cc-treino-dot','background',tCor);
-  const rCor=CC.seguranca.risco==='Baixo'?'var(--green)':CC.seguranca.risco==='Moderado'?'var(--amber)':'var(--coral)';
-  set('cc-ctx-risco',CC.seguranca.risco); set('cc-ctx-risco-sub',CC.seguranca.risco==='Baixo'?'Seguro':'Atenção');
-  setStyle('cc-risco-dot','background',rCor);
-
-  // Insights
-  const ins=document.getElementById('cc-insights');
-  if(ins){
-    const items=[];
-    if(h.sono!==null&&h.sono<7) items.push({i:'😴',t:`Sono de ${h.sono}h. Tente dormir 7h+ para melhor recuperação.`});
-    if(n.cal>0&&n.cal<metaCal*0.6) items.push({i:'🍽',t:`Calorias abaixo da meta (${n.cal}/${metaCal} kcal).`});
-    if(CC.seguranca.lesoes.length) items.push({i:'⚠',t:`Dor em ${CC.seguranca.lesoes.join(', ')}. Exercícios adaptados.`});
-    if(!items.length) items.push({i:'✦',t:'Continue registrando para insights personalizados.'});
-    ins.innerHTML=items.slice(0,2).map(x=>`<div class="cc-insight"><div class="cc-insight-icon">${x.i}</div><div class="cc-insight-txt">${x.t}</div><div class="cc-insight-link">Ver recomendações →</div></div>`).join('');
-  }
+  // Propagar para todos os renderizadores
+  try { if(typeof renderCerebro === 'function')    renderCerebro();    } catch(_){}
+  try { if(typeof atualizarMetricas === 'function') atualizarMetricas();} catch(_){}
+  try { if(typeof renderTimeline === 'function')    renderTimeline();   } catch(_){}
   CC.save();
+  ccAtualizarContexto();
 }
 
-// ── CHAT UI ──────────────────────────────────
+// ── PAINEL DE CONTEXTO ───────────────────────
+function ccAtualizarContexto() {
+  const h = CC.habitos; const n = CC.nutricao; const p = NERAS?.perfil||{};
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  const sty = (id,prop,v) => { const e=document.getElementById(id); if(e) e.style[prop]=v; };
+
+  // Daily header
+  const hora = new Date().getHours();
+  const gUser = getUsuario?.()?.nome || p.nome || 'Usuário';
+  const gNome = gUser.split(' ')[0];
+  const gPref = hora<12 ? 'Bom dia, ' : hora<18 ? 'Boa tarde, ' : 'Boa noite, ';
+  set('cc-greeting', gPref + gNome + ' 👋');
+  set('cc-h-peso',   p.peso ? p.peso+'kg' : '—');
+  set('cc-h-sono',   h.sono ? h.sono+'h'  : '—');
+  set('cc-h-treino', CC.treino.status);
+  const metaCal = (typeof calcularMetasNutri === 'function' ? calcularMetasNutri().metaCal : n.metaCal) || 2400;
+  set('cc-h-meta', metaCal.toLocaleString('pt-BR')+' kcal');
+
+  // Summary block
+  set('cc-s-agua',   h.agua>0  ? h.agua.toFixed(1)+'L' : '0L');
+  set('cc-s-cal',    n.cal>0   ? n.cal.toLocaleString('pt-BR') : '0');
+  set('cc-s-treino', CC.treino.status);
+  set('cc-s-sono',   h.sono    ? h.sono+'h'  : '—');
+  set('cc-s-humor',  h.humor   || '—');
+  const sc = ccScore(); set('cc-s-score', sc+'/10');
+
+  // Peso
+  set('cc-ctx-peso',     (p.peso||78).toFixed(1).replace('.',',')+' kg');
+  set('cc-ctx-peso-sub', 'Perfil atual');
+
+  // Sono
+  if(h.sono !== null) {
+    set('cc-ctx-sono',     h.sono+'h');
+    set('cc-ctx-sono-sub', 'Hoje');
+    const sb = document.getElementById('cc-ctx-sono-badge');
+    if(sb) { sb.textContent=h.sono>=7?'Ideal':h.sono>=6?'Baixo':'Crítico'; sb.className='cc-badge '+(h.sono>=7?'cc-badge-ok':h.sono>=6?'cc-badge-warn':'cc-badge-risk'); }
+  }
+
+  // Energia
+  if(h.energia !== null) {
+    set('cc-ctx-energia',     h.energia+'/10');
+    set('cc-ctx-energia-sub', h.energia>=7?'Alta':h.energia>=5?'Média':'Baixa');
+    const et = document.getElementById('cc-ctx-energia-trend');
+    if(et) { et.textContent=h.energia>=7?'↑':h.energia>=5?'→':'↓'; et.style.color=h.energia>=7?'var(--green)':h.energia>=5?'var(--amber)':'var(--coral)'; }
+  }
+
+  // Recuperação
+  const recup = h.sono !== null ? Math.round(Math.min(100, h.sono/9*100)) : null;
+  if(recup !== null) {
+    set('cc-ctx-recup',     recup+'%');
+    set('cc-ctx-recup-sub', recup>=70?'Boa':recup>=50?'Atenção':'Baixa');
+    const rb = document.getElementById('cc-ctx-recup-badge');
+    if(rb) { rb.textContent=recup>=70?'OK':recup>=50?'Atenção':'Baixa'; rb.className='cc-badge '+(recup>=70?'cc-badge-ok':recup>=50?'cc-badge-warn':'cc-badge-risk'); }
+  }
+
+  // Nutrição (ring)
+  const mCal = metaCal || 2400;
+  set('cc-ctx-cal',      n.cal.toLocaleString('pt-BR')+' kcal');
+  set('cc-ctx-cal-meta', 'de '+mCal.toLocaleString('pt-BR')+' kcal');
+  if(n.cal > 0) {
+    const pct = Math.min(100, Math.round(n.cal/mCal*100));
+    set('cc-cal-pct', pct+'%');
+    const r = document.getElementById('cc-cal-ring'); if(r) r.style.strokeDashoffset = (69.1 - 69.1*pct/100);
+  }
+
+  // Água (ring)
+  if(h.agua > 0) {
+    const pct = Math.min(100, Math.round(h.agua/3*100));
+    set('cc-ctx-agua',      h.agua.toFixed(1).replace('.',',')+' L');
+    set('cc-agua-pct',      pct+'%');
+    const r = document.getElementById('cc-agua-ring'); if(r) r.style.strokeDashoffset = (69.1 - 69.1*pct/100);
+  }
+
+  // Treino dot
+  const tCor = CC.treino.concluido?'var(--green)':CC.treino.ajustado?'var(--amber)':'var(--green)';
+  set('cc-ctx-treino', CC.treino.status); sty('cc-treino-dot','background',tCor);
+
+  // Risco
+  const rCor = CC.seguranca.risco==='Baixo'?'var(--green)':CC.seguranca.risco==='Moderado'?'var(--amber)':'var(--coral)';
+  set('cc-ctx-risco',     CC.seguranca.risco);
+  set('cc-ctx-risco-sub', CC.seguranca.risco==='Baixo'?'Seguro':'Atenção');
+  sty('cc-risco-dot','background',rCor);
+
+  // PRIORIDADES
+  const prioEl = document.getElementById('cc-priorities');
+  if(prioEl) {
+    const it = [];
+    if(h.sono!==null && h.sono<5)      it.push({e:'🔴',t:`Sono crítico: ${h.sono}h`});
+    else if(h.sono!==null && h.sono<7) it.push({e:'🟡',t:`Sono abaixo do ideal: ${h.sono}h`});
+    if(h.agua < 1 && h.agua > 0)       it.push({e:'🔴',t:'Hidratação muito baixa'});
+    else if(h.agua < 1.5 && h.agua>0)  it.push({e:'🟡',t:`Baixa hidratação: ${h.agua.toFixed(1)}L`});
+    if(CC.seguranca.lesoes.length)      it.push({e:'🔴',t:`Dor: ${CC.seguranca.lesoes[0]}`});
+    if(n.cal>0 && n.cal<mCal*0.5)      it.push({e:'🟡',t:'Calorias muito abaixo'});
+    if(CC.treino.concluido)             it.push({e:'🟢',t:'Treino concluído!'});
+    if(h.sono!==null && h.sono>=7)      it.push({e:'🟢',t:'Sono adequado'});
+    if(h.agua>=2.5)                     it.push({e:'🟢',t:'Boa hidratação'});
+    if(!it.length)                      it.push({e:'🟢',t:'Tudo em ordem por agora!'});
+    prioEl.innerHTML = it.slice(0,3).map(x=>`<div class="cc-prio">${x.e}<span>${x.t}</span></div>`).join('');
+  }
+
+  // MEMÓRIA
+  const memEl = document.getElementById('cc-memory');
+  if(memEl) {
+    if(!CC.memoria.length) {
+      memEl.innerHTML = '<div class="cc-mem-item" style="opacity:.5;font-style:italic;font-size:11px">Nenhum evento ainda</div>';
+    } else {
+      memEl.innerHTML = CC.memoria.slice(0,8).map(m=>`
+        <div class="cc-mem-item">
+          <div class="cc-mem-dot" style="background:${m.cor}"></div>
+          <div style="flex:1;min-width:0">
+            <span style="font-size:11px;font-weight:500;color:var(--text)">${m.tipo}</span>
+            <span style="font-size:11px;color:var(--text3)"> — ${m.desc}</span>
+          </div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);flex-shrink:0">${m.ts}</div>
+        </div>`).join('');
+    }
+  }
+}
+
+// ── CHAT UI ─────────────────────────────────
+let _ccCount = 0;
+
 function ccEnviar() {
-  const inp=document.getElementById('cc-input');
-  const txt=inp?.value.trim(); if(!txt) return;
-  inp.value=''; inp.style.height='';
-  ccMsgUser(txt);
+  const inp = document.getElementById('cc-input');
+  const txt = inp?.value.trim();
+  if(!txt) return;
+  inp.value = ''; inp.style.height = '';
+  ccAddUser(txt);
   ccShowTyping();
-  setTimeout(()=>{
+  setTimeout(() => {
     ccHideTyping();
-    const r=ccInterpretar(txt);
-    ccMsgAI(r);
-    CC.historico.push({role:'user',text:txt});
-    CC.historico.push({role:'ai',resp:r});
+    const resp = ccInterpretar(txt);
+    ccAddAI(resp);
+    CC.historico.push({ role:'user', text:txt, ts:ccNow() });
+    CC.historico.push({ role:'ai',   resp,     ts:ccNow() });
     CC.save();
-  }, 900+Math.random()*500);
+  }, 800 + Math.random()*600);
 }
 
-function ccMsgUser(txt) {
-  const div=document.createElement('div');
-  div.className='cc-user';
-  div.innerHTML=`<div class="cc-meta">${ccNow()}<br><span style="color:var(--green);font-size:10px">✓✓</span></div><div class="cc-user-bubble">${ccEsc(txt)}</div>`;
+function ccAddUser(txt) {
+  _ccCount++;
+  const div = document.createElement('div');
+  div.className = 'cc-user';
+  div.innerHTML = `
+    <div class="cc-meta">${ccNow()}<br><span style="color:var(--green);font-size:10px">✓✓</span></div>
+    <div class="cc-user-bubble">${ccEsc(txt)}</div>`;
   document.getElementById('cc-messages').appendChild(div);
   ccScroll();
 }
 
-function ccMsgAI(r) {
-  const div=document.createElement('div'); div.className='cc-ai';
-  let inner=`<div class="cc-ai-av">🧠</div><div><div class="cc-ai-bubble">`;
-  inner+=`<div>${r.texto.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
-  if(r.extra?.tipo==='macro'){
-    const e=r.extra;
-    inner+=`<div class="cc-macro-grid">
+function ccAddAI(r) {
+  const id = 'cm'+(_ccCount++);
+  const div = document.createElement('div');
+  div.className = 'cc-ai-msg';
+
+  let html = `<div class="cc-av">🧠</div><div style="flex:1;min-width:0"><div class="cc-ai-bubble">`;
+
+  // Texto
+  html += `<div>${r.texto.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
+
+  // Macro cards
+  if(r.extra?.tipo === 'macro') {
+    const e = r.extra;
+    html += `<div class="cc-macro-grid">
       <div class="cc-macro-card"><div class="cc-macro-unit">kcal</div><div class="cc-macro-val" style="color:var(--amber)">${e.kcal}</div><div class="cc-macro-name">Calorias</div></div>
       <div class="cc-macro-card"><div class="cc-macro-unit">g</div><div class="cc-macro-val" style="color:var(--amber)">${e.carb}</div><div class="cc-macro-name">Carboidratos</div></div>
       <div class="cc-macro-card"><div class="cc-macro-unit">g</div><div class="cc-macro-val" style="color:var(--blue)">${e.prot}</div><div class="cc-macro-name">Proteínas</div></div>
-      <div class="cc-macro-card"><div class="cc-macro-unit">g</div><div class="cc-macro-val" style="color:var(--purple)">${e.gord}</div><div class="cc-macro-name">Gorduras</div></div></div>`;
+      <div class="cc-macro-card"><div class="cc-macro-unit">g</div><div class="cc-macro-val" style="color:var(--purple)">${e.gord}</div><div class="cc-macro-name">Gorduras</div></div>
+    </div>`;
   }
-  if(r.extra?.tipo==='peso'){
-    const e=r.extra; const dc=parseFloat(e.diff)>=0?'var(--amber)':'var(--green)';
-    inner+=`<div class="cc-weight-grid">
+
+  // Weight cards
+  if(r.extra?.tipo === 'peso') {
+    const e = r.extra;
+    const dCor = parseFloat(e.diff) >= 0 ? 'var(--amber)' : 'var(--green)';
+    html += `<div class="cc-weight-grid">
       <div class="cc-weight-card"><div class="cc-weight-lbl">Peso anterior</div><div class="cc-weight-val">${String(e.anterior).replace('.',',')} kg</div></div>
       <div class="cc-weight-card"><div class="cc-weight-lbl">Peso atual</div><div class="cc-weight-val">${String(e.atual).replace('.',',')} kg</div></div>
-      <div class="cc-weight-card"><div class="cc-weight-lbl">Diferença</div><div class="cc-weight-val" style="color:${dc}">${e.diff} kg</div></div>
-      <div class="cc-weight-card"><div class="cc-weight-lbl">Meta</div><div class="cc-weight-val">${e.meta} kg</div></div></div>`;
+      <div class="cc-weight-card"><div class="cc-weight-lbl">Diferença</div><div class="cc-weight-val" style="color:${dCor}">${e.diff} kg</div></div>
+      <div class="cc-weight-card"><div class="cc-weight-lbl">Meta</div><div class="cc-weight-val">${e.meta} kg</div></div>
+    </div>`;
   }
-  if(r.acoes.length){
-    inner+=`<div class="cc-actions"><div class="cc-actions-lbl">AÇÕES REALIZADAS</div>`;
-    inner+=r.acoes.map(a=>`<div class="cc-action"><span class="cc-action-ok">✓</span>${a}</div>`).join('');
-    inner+=`</div>`;
+
+  // Ações executadas (imediatas)
+  if(r.acoes.length) {
+    html += `<div class="cc-acts"><div class="cc-acts-lbl">AÇÕES EXECUTADAS</div>`;
+    html += r.acoes.map(a => `<div class="cc-act-item"><span class="cc-act-ok">✓</span>${a}</div>`).join('');
+    html += `</div>`;
   }
-  inner+=`<div class="cc-ai-time">${ccNow()}</div></div></div>`;
-  div.innerHTML=inner;
+
+  // Ação pendente (requer aprovação)
+  if(r.pendente) {
+    const pid = 'p'+id;
+    window._ccPend = window._ccPend || {};
+    window._ccPend[pid] = r.pendente;
+    html += `
+      <div class="cc-acts" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.04);margin-top:9px">
+        <div class="cc-acts-lbl" style="color:var(--amber)">AÇÃO SUGERIDA</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${r.pendente.descricao}</div>
+      </div>
+      <div class="cc-approve">
+        <button class="cc-btn-apply"  onclick="ccAplicar('${pid}',this)">✓ Aplicar alteração</button>
+        <button class="cc-btn-ignore" onclick="ccIgnorar('${pid}',this)">✗ Ignorar</button>
+        <button class="cc-btn-why"    onclick="ccToggleWhy('${pid}w')">? Por que isso?</button>
+      </div>
+      <div class="cc-why" id="${pid}w">
+        <div class="cc-why-lbl">FATORES ANALISADOS</div>
+        ${(r.motivos||[]).map(m=>`<div class="cc-why-item"><span style="color:var(--green)">✓</span>${m}</div>`).join('')}
+        ${r.confianca?`<div class="cc-conf ${r.confianca==='Alta'?'cc-conf-high':'cc-conf-med'}">Confiança: ${r.confianca}</div>`:''}
+      </div>`;
+  } else if(r.motivos?.length) {
+    const wid = 'w'+id;
+    html += `
+      <div class="cc-approve">
+        <button class="cc-btn-why" onclick="ccToggleWhy('${wid}')">? Por que a IA sugeriu isso?</button>
+      </div>
+      <div class="cc-why" id="${wid}">
+        <div class="cc-why-lbl">FATORES ANALISADOS</div>
+        ${r.motivos.map(m=>`<div class="cc-why-item"><span style="color:var(--green)">✓</span>${m}</div>`).join('')}
+        ${r.confianca?`<div class="cc-conf ${r.confianca==='Alta'?'cc-conf-high':'cc-conf-med'}">Confiança: ${r.confianca}</div>`:''}
+      </div>`;
+  }
+
+  html += `<div class="cc-ai-time">${ccNow()}</div></div></div>`;
+  div.innerHTML = html;
   document.getElementById('cc-messages').appendChild(div);
   ccScroll();
 }
 
-function ccShowTyping() {
-  const d=document.createElement('div'); d.className='cc-typing'; d.id='cc-typing';
-  d.innerHTML=`<div class="cc-ai-av">🧠</div><div class="cc-typing-dots"><span></span><span></span><span></span></div>`;
-  document.getElementById('cc-messages').appendChild(d); ccScroll();
+function ccAplicar(pid, btn) {
+  const p = window._ccPend?.[pid];
+  if(!p) return;
+  p.fn();
+  // Mostrar ações aplicadas
+  const block = btn?.closest('.cc-approve');
+  const actsHtml = `<div class="cc-acts" style="margin-top:8px"><div class="cc-acts-lbl">AÇÕES EXECUTADAS</div>${p.acoes.map(a=>`<div class="cc-act-item"><span class="cc-act-ok">✓</span>${a}</div>`).join('')}</div>`;
+  if(block) { const prev = block.previousElementSibling; if(prev) prev.outerHTML=''; block.outerHTML = actsHtml; }
+  delete window._ccPend[pid];
 }
-function ccHideTyping(){ document.getElementById('cc-typing')?.remove(); }
-function ccSend(t){ document.getElementById('cc-input').value=t; ccEnviar(); }
-function ccScroll(){ const m=document.getElementById('cc-messages'); if(m) setTimeout(()=>m.scrollTop=m.scrollHeight,50); }
-function ccKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ccEnviar();} }
-function ccResize(el){ el.style.height=''; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
 
-// Init CC when navigating to neras-ai page
-// Hooked via showPage trigger already added above (if(name==='neras-ai') renderFisio etc)
+function ccIgnorar(pid, btn) {
+  const block = btn?.closest('.cc-approve');
+  if(block) {
+    const prev = block.previousElementSibling;
+    if(prev) prev.outerHTML = '';
+    block.outerHTML = '<div style="font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono)">Sugestão ignorada.</div>';
+  }
+  delete window._ccPend?.[pid];
+}
+
+function ccToggleWhy(id) {
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+function ccShowTyping() {
+  const d = document.createElement('div');
+  d.className = 'cc-typing'; d.id = 'cc-typing';
+  d.innerHTML = `<div class="cc-av">🧠</div><div class="cc-dots"><span></span><span></span><span></span></div>`;
+  document.getElementById('cc-messages').appendChild(d);
+  ccScroll();
+}
+function ccHideTyping() { document.getElementById('cc-typing')?.remove(); }
+
+function ccChip(txt) {
+  if(txt === 'Quero atualizar meu peso')   CC._aguardando = 'peso';
+  if(txt === 'Quero atualizar meu sono')   CC._aguardando = 'sono';
+  if(txt === 'Quero registrar uma refeição') CC._aguardando = 'refeicao';
+  const inp = document.getElementById('cc-input');
+  if(inp) { inp.value = txt; ccEnviar(); }
+}
+
+function ccScroll() {
+  const m = document.getElementById('cc-messages');
+  if(m) setTimeout(() => m.scrollTop = m.scrollHeight, 60);
+}
+function ccKey(e) { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); ccEnviar(); } }
+function ccResize(el) { el.style.height=''; el.style.height=Math.min(el.scrollHeight,90)+'px'; }
+
+// ── INIT ────────────────────────────────────
 function initCommandCenter() {
-  const timeEl = document.getElementById('cc-welcome-time');
-  if(timeEl && !timeEl.textContent) timeEl.textContent = ccNow();
-  CC.load(); ccAtualizarContexto();
+  CC.load();
+  const tw = document.getElementById('cc-welcome-time');
+  if(tw && !tw.textContent) tw.textContent = ccNow();
+  ccAtualizarContexto();
+
   // Restaurar histórico visual (últimas 4 trocas)
   const msgs = document.getElementById('cc-messages');
   if(msgs && msgs.children.length <= 2 && CC.historico.length > 0) {
     CC.historico.slice(-4).forEach(e => {
-      if(e.role==='user') ccMsgUser(e.text);
-      else if(e.role==='ai'&&e.resp) ccMsgAI(e.resp);
+      if(e.role === 'user') ccAddUser(e.text);
+      else if(e.role === 'ai' && e.resp) ccAddAI(e.resp);
     });
   }
 }
-
 </script>
 </body>
 </html>
